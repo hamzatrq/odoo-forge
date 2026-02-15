@@ -13,7 +13,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 ### Clone & Install
 
 ```bash
-git clone https://github.com/odooforge/odooforge.git
+git clone https://github.com/hamzatrq/odooforge.git
 cd odooforge
 
 # Install with dev dependencies
@@ -127,7 +127,7 @@ test: add edge cases for schema creation
 
 ## Reporting Issues
 
-- Use [GitHub Issues](https://github.com/odooforge/odooforge/issues)
+- Use [GitHub Issues](https://github.com/hamzatrq/odooforge/issues)
 - Include: Odoo version, Python version, steps to reproduce
 - For tool errors, include the full error response
 
