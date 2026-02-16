@@ -210,7 +210,7 @@ OdooForge is designed to be safe for AI-driven operations:
 
 ```bash
 # Clone and install
-git clone https://github.com/hamzatrq/odooforge.git
+git clone https://github.com/hamzatrq/odoo-forge.git
 cd odooforge
 uv sync --group dev
 

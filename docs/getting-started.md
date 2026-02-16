@@ -25,8 +25,8 @@ uvx odooforge
 ### Option 3: From source
 
 ```bash
-git clone https://github.com/hamzatrq/odooforge.git
-cd odooforge
+git clone https://github.com/hamzatrq/odoo-forge.git
+cd odoo-forge
 uv sync
 ```
 
