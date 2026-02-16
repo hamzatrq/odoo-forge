@@ -117,6 +117,8 @@ This runs the latest published version of OdooForge isolated from your system.
         "ODOO_ADMIN_USER": "admin",
         "ODOO_ADMIN_PASSWORD": "my_admin_password",
         "ODOO_MASTER_PASSWORD": "my_master_password",
+        "POSTGRES_HOST": "localhost",
+        "POSTGRES_PORT": "5432",
         "POSTGRES_USER": "odoo",
         "POSTGRES_PASSWORD": "my_postgres_password"
       }
