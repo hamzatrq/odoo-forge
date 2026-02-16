@@ -113,7 +113,11 @@ This runs the latest published version of OdooForge isolated from your system.
       "args": ["odooforge"],
       "env": {
         "ODOO_URL": "http://localhost:8069",
+        "ODOO_DEFAULT_DB": "odoo",
+        "ODOO_ADMIN_USER": "admin",
+        "ODOO_ADMIN_PASSWORD": "my_admin_password",
         "ODOO_MASTER_PASSWORD": "my_master_password",
+        "POSTGRES_USER": "odoo",
         "POSTGRES_PASSWORD": "my_postgres_password"
       }
     }

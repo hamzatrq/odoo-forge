@@ -62,7 +62,10 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "args": ["odooforge"],
       "env": {
         "ODOO_URL": "http://localhost:8069",
+        "ODOO_DEFAULT_DB": "odoo",
+        "ODOO_ADMIN_USER": "admin",
         "ODOO_ADMIN_PASSWORD": "admin",
+        "POSTGRES_USER": "odoo",
         "POSTGRES_PASSWORD": "odoo"
       }
     }
@@ -82,6 +85,8 @@ Add to your Cursor MCP settings:
       "args": ["odooforge"],
       "env": {
         "ODOO_URL": "http://localhost:8069",
+        "ODOO_DEFAULT_DB": "odoo",
+        "ODOO_ADMIN_USER": "admin",
         "ODOO_ADMIN_PASSWORD": "admin"
       }
     }
