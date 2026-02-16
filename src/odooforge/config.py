@@ -40,11 +40,18 @@ class OdooForgeConfig:
         # Resolve docker compose path — default to <project_root>/docker
         compose_path = os.getenv("DOCKER_COMPOSE_PATH", "")
         if not compose_path:
-            # Try to find it relative to this file
-            project_root = Path(__file__).resolve().parent.parent.parent
-            candidate = project_root / "docker"
-            if candidate.exists():
-                compose_path = str(candidate)
+            # 1. Try package data (pip install)
+            package_root = Path(__file__).resolve().parent
+            data_compose = package_root / "data" / "docker-compose.yml"
+            
+            if data_compose.exists():
+                compose_path = str(data_compose)
+            else:
+                # 2. Try source root (dev mode)
+                project_root = package_root.parent.parent
+                dev_compose = project_root / "docker" / "docker-compose.yml"
+                if dev_compose.exists():
+                    compose_path = str(dev_compose)
 
         snapshots_dir = os.getenv("ODOOFORGE_SNAPSHOTS_DIR", "")
         if not snapshots_dir and compose_path:
