@@ -59,7 +59,12 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "odooforge": {
       "command": "uvx",
-      "args": ["odooforge"]
+      "args": ["odooforge"],
+      "env": {
+        "ODOO_URL": "http://localhost:8069",
+        "ODOO_ADMIN_PASSWORD": "admin",
+        "POSTGRES_PASSWORD": "odoo"
+      }
     }
   }
 }
@@ -74,7 +79,11 @@ Add to your Cursor MCP settings:
   "mcpServers": {
     "odooforge": {
       "command": "uvx",
-      "args": ["odooforge"]
+      "args": ["odooforge"],
+      "env": {
+        "ODOO_URL": "http://localhost:8069",
+        "ODOO_ADMIN_PASSWORD": "admin"
+      }
     }
   }
 }

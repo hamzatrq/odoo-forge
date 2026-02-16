@@ -37,6 +37,30 @@ Used for raw SQL queries, backups, and diagnostics.
 |----------|---------|-------------|
 | `ODOOFORGE_SNAPSHOTS_DIR` | `<docker_path>/snapshots` | Directory for database snapshot storage |
 
+## MCP Client Configuration
+
+When running via MCP clients (Claude Desktop, Cursor), explicitly pass environment variables in the configuration JSON. **This is required because `uvx` runs in an isolated environment and may not read your local `.env` file.**
+
+### Example `mcp.json`
+
+```json
+{
+  "mcpServers": {
+    "odooforge": {
+      "command": "uvx",
+      "args": ["odooforge"],
+      "env": {
+        "ODOO_URL": "http://localhost:8069",
+        "ODOO_MASTER_PASSWORD": "admin",
+        "ODOO_ADMIN_USER": "admin",
+        "ODOO_ADMIN_PASSWORD": "admin",
+        "POSTGRES_PASSWORD": "odoo"
+      }
+    }
+  }
+}
+```
+
 ## .env File
 
 Copy the provided template:
