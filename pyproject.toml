@@ -1,6 +1,6 @@
 [project]
 name = "odooforge"
-version = "0.1.4"
+version = "0.1.5"
 description = "AI-First ERP Configuration Engine — MCP server for Odoo 18"
 readme = "README.md"
 license = { text = "AGPL-3.0+" }

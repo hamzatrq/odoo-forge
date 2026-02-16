@@ -43,8 +43,15 @@ class OdooDocker:
     """Docker Compose wrapper for Odoo infrastructure management."""
 
     def __init__(self, compose_path: str):
-        self.compose_dir = Path(compose_path)
-        self.compose_file = self.compose_dir / "docker-compose.yml"
+        path = Path(compose_path)
+        
+        if path.is_file():
+            self.compose_file = path
+            self.compose_dir = path.parent
+        else:
+            self.compose_dir = path
+            self.compose_file = self.compose_dir / "docker-compose.yml"
+
         self._snapshots_dir = self.compose_dir / "snapshots"
 
         if not self.compose_file.exists():
