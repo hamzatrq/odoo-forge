@@ -83,6 +83,61 @@ ODOO_ADMIN_PASSWORD=admin
 
 > **That's it.** Ask your AI assistant to run `odoo_diagnostics_health_check` to verify everything is connected.
 
+## ⚙️ Configuration
+
+OdooForge can be configured via environment variables. When running as an MCP server, pass these in your `mcp.json` or `claude_desktop_config.json`.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `ODOO_URL` | URL of the Odoo instance | `http://localhost:8069` |
+| `ODOO_DEFAULT_DB` | Database to connect to by default | `odoo` |
+| `ODOO_ADMIN_USER` | Admin username (for RPC) | `admin` |
+| `ODOO_ADMIN_PASSWORD` | Admin password | `admin` |
+| `ODOO_MASTER_PASSWORD` | Master password (for DB creation) | `admin` |
+| `POSTGRES_HOST` | PostgreSQL host | `localhost` |
+| `POSTGRES_PORT` | PostgreSQL port | `5432` |
+| `POSTGRES_USER` | PostgreSQL user | `odoo` |
+| `POSTGRES_PASSWORD` | PostgreSQL password | `odoo` |
+| `DOCKER_COMPOSE_PATH` | Path to `docker-compose.yml` (optional) | _Auto-detected_ |
+
+### MCP Client Config (`mcp.json`)
+
+#### Option 1: Using `uvx` (Recommended)
+This runs the latest published version of OdooForge isolated from your system.
+
+```json
+{
+  "mcpServers": {
+    "odooforge": {
+      "command": "uvx",
+      "args": ["odooforge"],
+      "env": {
+        "ODOO_URL": "http://localhost:8069",
+        "ODOO_MASTER_PASSWORD": "my_master_password",
+        "POSTGRES_PASSWORD": "my_postgres_password"
+      }
+    }
+  }
+}
+```
+
+#### Option 2: Using Local Project (Development)
+If you have customized OdooForge in a local virtual environment:
+
+```json
+{
+  "mcpServers": {
+    "odooforge": {
+      "command": "/path/to/your/venv/bin/odooforge",
+      "args": [],
+      "env": {
+        "ODOO_ADMIN_PASSWORD": "secure_password"
+      }
+    }
+  }
+}
+```
+
 ## 🛠 71 Tools Across 16 Categories
 
 | Category | # | Tools | Docs |

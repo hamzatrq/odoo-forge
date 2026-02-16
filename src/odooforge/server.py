@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import Context, FastMCP
 
 from odooforge.config import get_config
 from odooforge.connections.docker_client import OdooDocker
@@ -95,7 +95,7 @@ def _state(ctx) -> AppState:
 # ── Instance Management Tools ──────────────────────────────────────
 
 @mcp.tool()
-async def odoo_instance_start(ctx, port: int = 8069) -> dict:
+async def odoo_instance_start(ctx: Context, port: int = 8069) -> dict:
     """Start the Odoo Docker environment (Odoo + PostgreSQL).
     Brings up both containers and waits for Odoo to be healthy.
     """
@@ -105,7 +105,7 @@ async def odoo_instance_start(ctx, port: int = 8069) -> dict:
 
 
 @mcp.tool()
-async def odoo_instance_stop(ctx, remove_volumes: bool = False) -> dict:
+async def odoo_instance_stop(ctx: Context, remove_volumes: bool = False) -> dict:
     """Stop the running Odoo Docker environment.
     Set remove_volumes=true to also erase all data (DESTRUCTIVE).
     """
@@ -115,7 +115,7 @@ async def odoo_instance_stop(ctx, remove_volumes: bool = False) -> dict:
 
 
 @mcp.tool()
-async def odoo_instance_restart(ctx) -> dict:
+async def odoo_instance_restart(ctx: Context) -> dict:
     """Restart the Odoo service (not PostgreSQL).
     Useful after configuration changes or to reload the registry.
     """
@@ -125,7 +125,7 @@ async def odoo_instance_restart(ctx) -> dict:
 
 
 @mcp.tool()
-async def odoo_instance_status(ctx) -> dict:
+async def odoo_instance_status(ctx: Context) -> dict:
     """Returns health status of all containers, ports, and Odoo version."""
     from odooforge.tools.instance import odoo_instance_status as _impl
     s = _state(ctx)
@@ -134,7 +134,7 @@ async def odoo_instance_status(ctx) -> dict:
 
 @mcp.tool()
 async def odoo_instance_logs(
-    ctx,
+    ctx: Context,
     lines: int = 100,
     level_filter: str | None = None,
     since: str | None = None,
@@ -150,7 +150,7 @@ async def odoo_instance_logs(
 
 @mcp.tool()
 async def odoo_db_create(
-    ctx,
+    ctx: Context,
     db_name: str,
     language: str = "en_US",
     country: str | None = None,
@@ -170,7 +170,7 @@ async def odoo_db_create(
 
 
 @mcp.tool()
-async def odoo_db_list(ctx) -> dict:
+async def odoo_db_list(ctx: Context) -> dict:
     """List all databases on the Odoo instance."""
     from odooforge.tools.database import odoo_db_list as _impl
     s = _state(ctx)
@@ -178,7 +178,7 @@ async def odoo_db_list(ctx) -> dict:
 
 
 @mcp.tool()
-async def odoo_db_backup(ctx, db_name: str) -> dict:
+async def odoo_db_backup(ctx: Context, db_name: str) -> dict:
     """Create a backup of a database using pg_dump."""
     from odooforge.tools.database import odoo_db_backup as _impl
     s = _state(ctx)
@@ -187,7 +187,7 @@ async def odoo_db_backup(ctx, db_name: str) -> dict:
 
 @mcp.tool()
 async def odoo_db_restore(
-    ctx, db_name: str, backup_name: str, overwrite: bool = False,
+    ctx: Context, db_name: str, backup_name: str, overwrite: bool = False,
 ) -> dict:
     """Restore a database from a backup snapshot.
     Set overwrite=true to replace an existing database.
@@ -198,7 +198,7 @@ async def odoo_db_restore(
 
 
 @mcp.tool()
-async def odoo_db_drop(ctx, db_name: str, confirm: bool = False) -> dict:
+async def odoo_db_drop(ctx: Context, db_name: str, confirm: bool = False) -> dict:
     """Drop a database permanently. Set confirm=true to proceed."""
     from odooforge.tools.database import odoo_db_drop as _impl
     s = _state(ctx)
@@ -207,7 +207,7 @@ async def odoo_db_drop(ctx, db_name: str, confirm: bool = False) -> dict:
 
 @mcp.tool()
 async def odoo_db_run_sql(
-    ctx, db_name: str, query: str, params: list | None = None,
+    ctx: Context, db_name: str, query: str, params: list | None = None,
 ) -> dict:
     """Execute a raw SQL query against a database.
     Returns rows for SELECT queries, execution status for others.
@@ -222,7 +222,7 @@ async def odoo_db_run_sql(
 
 @mcp.tool()
 async def odoo_record_search(
-    ctx,
+    ctx: Context,
     db_name: str,
     model: str,
     domain: list | None = None,
@@ -245,7 +245,7 @@ async def odoo_record_search(
 
 @mcp.tool()
 async def odoo_record_read(
-    ctx, db_name: str, model: str, ids: list[int], fields: list[str] | None = None,
+    ctx: Context, db_name: str, model: str, ids: list[int], fields: list[str] | None = None,
 ) -> dict:
     """Read specific records by ID from any model."""
     from odooforge.tools.records import odoo_record_read as _impl
@@ -255,7 +255,7 @@ async def odoo_record_read(
 
 @mcp.tool()
 async def odoo_record_create(
-    ctx, db_name: str, model: str, values: dict | list[dict],
+    ctx: Context, db_name: str, model: str, values: dict | list[dict],
 ) -> dict:
     """Create one or more records in any Odoo model.
     Field names are validated against the live schema before writing.
@@ -267,7 +267,7 @@ async def odoo_record_create(
 
 @mcp.tool()
 async def odoo_record_update(
-    ctx, db_name: str, model: str, ids: list[int], values: dict,
+    ctx: Context, db_name: str, model: str, ids: list[int], values: dict,
 ) -> dict:
     """Update existing records. Field names are validated before writing."""
     from odooforge.tools.records import odoo_record_update as _impl
@@ -277,7 +277,7 @@ async def odoo_record_update(
 
 @mcp.tool()
 async def odoo_record_delete(
-    ctx, db_name: str, model: str, ids: list[int], confirm: bool = False,
+    ctx: Context, db_name: str, model: str, ids: list[int], confirm: bool = False,
 ) -> dict:
     """Delete records. Set confirm=true to proceed (cannot be undone)."""
     from odooforge.tools.records import odoo_record_delete as _impl
@@ -287,7 +287,7 @@ async def odoo_record_delete(
 
 @mcp.tool()
 async def odoo_record_execute(
-    ctx,
+    ctx: Context,
     db_name: str,
     model: str,
     method: str,
@@ -306,7 +306,7 @@ async def odoo_record_execute(
 
 @mcp.tool()
 async def odoo_snapshot_create(
-    ctx, db_name: str, name: str, description: str = "",
+    ctx: Context, db_name: str, name: str, description: str = "",
 ) -> dict:
     """Create a named snapshot (backup) of a database.
     Use before risky operations like module installs or view modifications.
@@ -317,7 +317,7 @@ async def odoo_snapshot_create(
 
 
 @mcp.tool()
-async def odoo_snapshot_list(ctx, db_name: str | None = None) -> dict:
+async def odoo_snapshot_list(ctx: Context, db_name: str | None = None) -> dict:
     """List all available snapshots, optionally filtered by database."""
     from odooforge.tools.snapshots import odoo_snapshot_list as _impl
     s = _state(ctx)
@@ -325,7 +325,7 @@ async def odoo_snapshot_list(ctx, db_name: str | None = None) -> dict:
 
 
 @mcp.tool()
-async def odoo_snapshot_restore(ctx, db_name: str, snapshot_name: str) -> dict:
+async def odoo_snapshot_restore(ctx: Context, db_name: str, snapshot_name: str) -> dict:
     """Restore a database from a previously created snapshot.
     ⚠️ This replaces the current database contents entirely.
     """
@@ -335,7 +335,7 @@ async def odoo_snapshot_restore(ctx, db_name: str, snapshot_name: str) -> dict:
 
 
 @mcp.tool()
-async def odoo_snapshot_delete(ctx, name: str) -> dict:
+async def odoo_snapshot_delete(ctx: Context, name: str) -> dict:
     """Delete a snapshot from disk to free space."""
     from odooforge.tools.snapshots import odoo_snapshot_delete as _impl
     s = _state(ctx)
@@ -346,7 +346,7 @@ async def odoo_snapshot_delete(ctx, name: str) -> dict:
 
 @mcp.tool()
 async def odoo_module_list_available(
-    ctx, db_name: str, category: str | None = None,
+    ctx: Context, db_name: str, category: str | None = None,
 ) -> dict:
     """List all modules available for installation, optionally filtered by category."""
     from odooforge.tools.modules import odoo_module_list_available as _impl
@@ -355,7 +355,7 @@ async def odoo_module_list_available(
 
 
 @mcp.tool()
-async def odoo_module_list_installed(ctx, db_name: str) -> dict:
+async def odoo_module_list_installed(ctx: Context, db_name: str) -> dict:
     """List all currently installed modules."""
     from odooforge.tools.modules import odoo_module_list_installed as _impl
     s = _state(ctx)
@@ -363,7 +363,7 @@ async def odoo_module_list_installed(ctx, db_name: str) -> dict:
 
 
 @mcp.tool()
-async def odoo_module_info(ctx, db_name: str, module_name: str) -> dict:
+async def odoo_module_info(ctx: Context, db_name: str, module_name: str) -> dict:
     """Get detailed information about a specific module including dependencies."""
     from odooforge.tools.modules import odoo_module_info as _impl
     s = _state(ctx)
@@ -371,7 +371,7 @@ async def odoo_module_info(ctx, db_name: str, module_name: str) -> dict:
 
 
 @mcp.tool()
-async def odoo_module_install(ctx, db_name: str, modules: list[str]) -> dict:
+async def odoo_module_install(ctx: Context, db_name: str, modules: list[str]) -> dict:
     """Install one or more Odoo modules with automatic dependency resolution.
     Post-install verification checks module state and error logs.
     """
@@ -381,7 +381,7 @@ async def odoo_module_install(ctx, db_name: str, modules: list[str]) -> dict:
 
 
 @mcp.tool()
-async def odoo_module_upgrade(ctx, db_name: str, modules: list[str]) -> dict:
+async def odoo_module_upgrade(ctx: Context, db_name: str, modules: list[str]) -> dict:
     """Upgrade (update) installed modules to apply changes."""
     from odooforge.tools.modules import odoo_module_upgrade as _impl
     s = _state(ctx)
@@ -390,7 +390,7 @@ async def odoo_module_upgrade(ctx, db_name: str, modules: list[str]) -> dict:
 
 @mcp.tool()
 async def odoo_module_uninstall(
-    ctx, db_name: str, module_name: str, confirm: bool = False,
+    ctx: Context, db_name: str, module_name: str, confirm: bool = False,
 ) -> dict:
     """Uninstall a module. Set confirm=true to proceed.
     ⚠️ May delete data created by the module. Create a snapshot first!
@@ -404,7 +404,7 @@ async def odoo_module_uninstall(
 
 @mcp.tool()
 async def odoo_model_list(
-    ctx, db_name: str, search: str | None = None, transient: bool = False,
+    ctx: Context, db_name: str, search: str | None = None, transient: bool = False,
 ) -> dict:
     """List all available models (database tables) in Odoo.
     Filter by name/description with search. Set transient=true to include wizard models.
@@ -416,7 +416,7 @@ async def odoo_model_list(
 
 @mcp.tool()
 async def odoo_model_fields(
-    ctx, db_name: str, model: str,
+    ctx: Context, db_name: str, model: str,
     field_type: str | None = None, search: str | None = None,
 ) -> dict:
     """Get all fields of a model with types and attributes.
@@ -429,7 +429,7 @@ async def odoo_model_fields(
 
 @mcp.tool()
 async def odoo_model_search_field(
-    ctx, db_name: str, query: str, model: str | None = None,
+    ctx: Context, db_name: str, query: str, model: str | None = None,
 ) -> dict:
     """Search for fields across all models or within a specific model.
     Useful when you know a field exists but aren't sure which model it's on.
@@ -443,7 +443,7 @@ async def odoo_model_search_field(
 
 @mcp.tool()
 async def odoo_schema_field_create(
-    ctx, db_name: str, model: str, field_name: str,
+    ctx: Context, db_name: str, model: str, field_name: str,
     field_type: str, field_label: str,
     required: bool = False,
     selection_options: list[list[str]] | None = None,
@@ -467,7 +467,7 @@ async def odoo_schema_field_create(
 
 @mcp.tool()
 async def odoo_schema_field_update(
-    ctx, db_name: str, model: str, field_name: str, updates: dict,
+    ctx: Context, db_name: str, model: str, field_name: str, updates: dict,
 ) -> dict:
     """Update properties of an existing custom field (x_ prefix only)."""
     from odooforge.tools.schema import odoo_schema_field_update as _impl
@@ -477,7 +477,7 @@ async def odoo_schema_field_update(
 
 @mcp.tool()
 async def odoo_schema_field_delete(
-    ctx, db_name: str, model: str, field_name: str, confirm: bool = False,
+    ctx: Context, db_name: str, model: str, field_name: str, confirm: bool = False,
 ) -> dict:
     """Delete a custom field from a model. Set confirm=true to proceed.
     ⚠️ This permanently removes the field and all its data.
@@ -489,7 +489,7 @@ async def odoo_schema_field_delete(
 
 @mcp.tool()
 async def odoo_schema_model_create(
-    ctx, db_name: str, model_name: str, model_label: str,
+    ctx: Context, db_name: str, model_name: str, model_label: str,
     fields: list[dict] | None = None,
 ) -> dict:
     """Create a new custom model (database table).
@@ -501,7 +501,7 @@ async def odoo_schema_model_create(
 
 
 @mcp.tool()
-async def odoo_schema_list_custom(ctx, db_name: str) -> dict:
+async def odoo_schema_list_custom(ctx: Context, db_name: str) -> dict:
     """List all custom (manually created) fields and models."""
     from odooforge.tools.schema import odoo_schema_list_custom as _impl
     s = _state(ctx)
@@ -512,7 +512,7 @@ async def odoo_schema_list_custom(ctx, db_name: str) -> dict:
 
 @mcp.tool()
 async def odoo_view_list(
-    ctx, db_name: str, model: str | None = None, view_type: str | None = None,
+    ctx: Context, db_name: str, model: str | None = None, view_type: str | None = None,
 ) -> dict:
     """List views, optionally filtered by model or type (form, tree, kanban, search)."""
     from odooforge.tools.views import odoo_view_list as _impl
@@ -522,7 +522,7 @@ async def odoo_view_list(
 
 @mcp.tool()
 async def odoo_view_get_arch(
-    ctx, db_name: str, view_id: int | None = None,
+    ctx: Context, db_name: str, view_id: int | None = None,
     model: str | None = None, view_type: str = "form",
 ) -> dict:
     """Get the full architecture XML of a view. Specify view_id or model+view_type."""
@@ -533,7 +533,7 @@ async def odoo_view_get_arch(
 
 @mcp.tool()
 async def odoo_view_modify(
-    ctx, db_name: str, inherit_view_id: int,
+    ctx: Context, db_name: str, inherit_view_id: int,
     view_name: str, xpath_specs: list[dict],
 ) -> dict:
     """Modify a view using XPath inheritance. Creates an inheriting view.
@@ -546,7 +546,7 @@ async def odoo_view_modify(
 
 @mcp.tool()
 async def odoo_view_reset(
-    ctx, db_name: str, view_id: int, confirm: bool = False,
+    ctx: Context, db_name: str, view_id: int, confirm: bool = False,
 ) -> dict:
     """Delete a custom inheriting view to revert the parent view. Set confirm=true."""
     from odooforge.tools.views import odoo_view_reset as _impl
@@ -556,7 +556,7 @@ async def odoo_view_reset(
 
 @mcp.tool()
 async def odoo_view_list_customizations(
-    ctx, db_name: str, model: str | None = None,
+    ctx: Context, db_name: str, model: str | None = None,
 ) -> dict:
     """List all custom (inheriting) views that can be reset."""
     from odooforge.tools.views import odoo_view_list_customizations as _impl
@@ -568,7 +568,7 @@ async def odoo_view_list_customizations(
 
 @mcp.tool()
 async def odoo_report_list(
-    ctx, db_name: str, model: str | None = None,
+    ctx: Context, db_name: str, model: str | None = None,
 ) -> dict:
     """List all available reports, optionally filtered by model."""
     from odooforge.tools.reports import odoo_report_list as _impl
@@ -578,7 +578,7 @@ async def odoo_report_list(
 
 @mcp.tool()
 async def odoo_report_get_template(
-    ctx, db_name: str, report_name: str,
+    ctx: Context, db_name: str, report_name: str,
 ) -> dict:
     """Get the QWeb template XML of a report by technical name."""
     from odooforge.tools.reports import odoo_report_get_template as _impl
@@ -588,7 +588,7 @@ async def odoo_report_get_template(
 
 @mcp.tool()
 async def odoo_report_modify(
-    ctx, db_name: str, template_id: int,
+    ctx: Context, db_name: str, template_id: int,
     xpath_specs: list[dict], view_name: str | None = None,
 ) -> dict:
     """Modify a QWeb report template using XPath inheritance."""
@@ -599,7 +599,7 @@ async def odoo_report_modify(
 
 @mcp.tool()
 async def odoo_report_preview(
-    ctx, db_name: str, report_name: str, record_ids: list[int],
+    ctx: Context, db_name: str, report_name: str, record_ids: list[int],
 ) -> dict:
     """Generate a report preview for specific records."""
     from odooforge.tools.reports import odoo_report_preview as _impl
@@ -609,7 +609,7 @@ async def odoo_report_preview(
 
 @mcp.tool()
 async def odoo_report_reset(
-    ctx, db_name: str, view_id: int, confirm: bool = False,
+    ctx: Context, db_name: str, view_id: int, confirm: bool = False,
 ) -> dict:
     """Remove a custom report template modification. Set confirm=true."""
     from odooforge.tools.reports import odoo_report_reset as _impl
@@ -619,7 +619,7 @@ async def odoo_report_reset(
 
 @mcp.tool()
 async def odoo_report_layout_configure(
-    ctx, db_name: str, paperformat: str | None = None,
+    ctx: Context, db_name: str, paperformat: str | None = None,
     logo: str | None = None, company_name: str | None = None,
 ) -> dict:
     """Configure report layout (paper format, company logo/name)."""
@@ -632,7 +632,7 @@ async def odoo_report_layout_configure(
 
 @mcp.tool()
 async def odoo_automation_list(
-    ctx, db_name: str, model: str | None = None, trigger: str | None = None,
+    ctx: Context, db_name: str, model: str | None = None, trigger: str | None = None,
 ) -> dict:
     """List all automated actions, optionally filtered by model or trigger type."""
     from odooforge.tools.automation import odoo_automation_list as _impl
@@ -642,7 +642,7 @@ async def odoo_automation_list(
 
 @mcp.tool()
 async def odoo_automation_create(
-    ctx, db_name: str, name: str, model: str, trigger: str,
+    ctx: Context, db_name: str, name: str, model: str, trigger: str,
     action_type: str = "code", code: str | None = None,
     filter_domain: str | None = None,
     trigger_fields: list[str] | None = None,
@@ -659,7 +659,7 @@ async def odoo_automation_create(
 
 @mcp.tool()
 async def odoo_automation_update(
-    ctx, db_name: str, rule_id: int, updates: dict,
+    ctx: Context, db_name: str, rule_id: int, updates: dict,
 ) -> dict:
     """Update an existing automation rule."""
     from odooforge.tools.automation import odoo_automation_update as _impl
@@ -669,7 +669,7 @@ async def odoo_automation_update(
 
 @mcp.tool()
 async def odoo_automation_delete(
-    ctx, db_name: str, rule_id: int, confirm: bool = False,
+    ctx: Context, db_name: str, rule_id: int, confirm: bool = False,
 ) -> dict:
     """Delete an automation rule. Set confirm=true to proceed."""
     from odooforge.tools.automation import odoo_automation_delete as _impl
@@ -679,7 +679,7 @@ async def odoo_automation_delete(
 
 @mcp.tool()
 async def odoo_email_template_create(
-    ctx, db_name: str, name: str, model: str,
+    ctx: Context, db_name: str, name: str, model: str,
     subject: str, body_html: str,
     email_from: str | None = None, reply_to: str | None = None,
 ) -> dict:
@@ -696,7 +696,7 @@ async def odoo_email_template_create(
 
 @mcp.tool()
 async def odoo_network_expose(
-    ctx, port: int = 8069, method: str = "ssh",
+    ctx: Context, port: int = 8069, method: str = "ssh",
     subdomain: str | None = None,
 ) -> dict:
     """Expose local Odoo to the internet via tunnel (SSH or Cloudflare)."""
@@ -705,14 +705,14 @@ async def odoo_network_expose(
 
 
 @mcp.tool()
-async def odoo_network_status(ctx) -> dict:
+async def odoo_network_status(ctx: Context) -> dict:
     """Check active network tunnels."""
     from odooforge.tools.network import odoo_network_status as _impl
     return await _impl()
 
 
 @mcp.tool()
-async def odoo_network_stop(ctx, port: int | None = None) -> dict:
+async def odoo_network_stop(ctx: Context, port: int | None = None) -> dict:
     """Stop network tunnels. Omit port to stop all."""
     from odooforge.tools.network import odoo_network_stop as _impl
     return await _impl(port=port)
@@ -722,7 +722,7 @@ async def odoo_network_stop(ctx, port: int | None = None) -> dict:
 
 @mcp.tool()
 async def odoo_import_preview(
-    ctx, db_name: str, model: str, csv_data: str,
+    ctx: Context, db_name: str, model: str, csv_data: str,
     has_header: bool = True,
 ) -> dict:
     """Preview a CSV import — validates fields and shows what would be imported."""
@@ -733,7 +733,7 @@ async def odoo_import_preview(
 
 @mcp.tool()
 async def odoo_import_execute(
-    ctx, db_name: str, model: str, csv_data: str,
+    ctx: Context, db_name: str, model: str, csv_data: str,
     has_header: bool = True, on_error: str = "stop",
 ) -> dict:
     """Execute a CSV import into a model. Use odoo_import_preview first."""
@@ -744,7 +744,7 @@ async def odoo_import_execute(
 
 @mcp.tool()
 async def odoo_import_template(
-    ctx, db_name: str, model: str,
+    ctx: Context, db_name: str, model: str,
     include_optional: bool = False,
 ) -> dict:
     """Generate a CSV template with correct headers for importing into a model."""
@@ -757,7 +757,7 @@ async def odoo_import_template(
 
 @mcp.tool()
 async def odoo_email_configure_outgoing(
-    ctx, db_name: str, name: str, smtp_host: str,
+    ctx: Context, db_name: str, name: str, smtp_host: str,
     smtp_port: int = 587, smtp_user: str | None = None,
     smtp_pass: str | None = None, smtp_encryption: str = "starttls",
     email_from: str | None = None,
@@ -774,7 +774,7 @@ async def odoo_email_configure_outgoing(
 
 @mcp.tool()
 async def odoo_email_configure_incoming(
-    ctx, db_name: str, name: str,
+    ctx: Context, db_name: str, name: str,
     server_type: str = "imap", host: str = "",
     port: int = 993, user: str = "", password: str = "",
     ssl: bool = True,
@@ -790,7 +790,7 @@ async def odoo_email_configure_incoming(
 
 @mcp.tool()
 async def odoo_email_test(
-    ctx, db_name: str, to_address: str,
+    ctx: Context, db_name: str, to_address: str,
     subject: str = "OdooForge Test Email",
     body: str = "This is a test email from OdooForge.",
 ) -> dict:
@@ -801,7 +801,7 @@ async def odoo_email_test(
 
 
 @mcp.tool()
-async def odoo_email_dns_guide(ctx, domain: str) -> dict:
+async def odoo_email_dns_guide(ctx: Context, domain: str) -> dict:
     """Generate DNS records guide (SPF, DKIM, DMARC) for email deliverability."""
     from odooforge.tools.email import odoo_email_dns_guide as _impl
     return await _impl(domain)
@@ -811,7 +811,7 @@ async def odoo_email_dns_guide(ctx, domain: str) -> dict:
 
 @mcp.tool()
 async def odoo_settings_get(
-    ctx, db_name: str, keys: list[str] | None = None,
+    ctx: Context, db_name: str, keys: list[str] | None = None,
 ) -> dict:
     """Get system settings. Optionally specify keys to retrieve specific values."""
     from odooforge.tools.settings import odoo_settings_get as _impl
@@ -820,7 +820,7 @@ async def odoo_settings_get(
 
 
 @mcp.tool()
-async def odoo_settings_set(ctx, db_name: str, values: dict) -> dict:
+async def odoo_settings_set(ctx: Context, db_name: str, values: dict) -> dict:
     """Update system settings and apply them."""
     from odooforge.tools.settings import odoo_settings_set as _impl
     s = _state(ctx)
@@ -828,7 +828,7 @@ async def odoo_settings_set(ctx, db_name: str, values: dict) -> dict:
 
 
 @mcp.tool()
-async def odoo_company_configure(ctx, db_name: str, updates: dict) -> dict:
+async def odoo_company_configure(ctx: Context, db_name: str, updates: dict) -> dict:
     """Configure main company details (name, address, logo, currency, etc.)."""
     from odooforge.tools.settings import odoo_company_configure as _impl
     s = _state(ctx)
@@ -837,7 +837,7 @@ async def odoo_company_configure(ctx, db_name: str, updates: dict) -> dict:
 
 @mcp.tool()
 async def odoo_users_manage(
-    ctx, db_name: str, action: str = "list",
+    ctx: Context, db_name: str, action: str = "list",
     user_id: int | None = None, values: dict | None = None,
 ) -> dict:
     """Manage users — list, create, update, activate, deactivate."""
@@ -849,21 +849,21 @@ async def odoo_users_manage(
 # ── Knowledge Tools ───────────────────────────────────────────────
 
 @mcp.tool()
-async def odoo_knowledge_module_info(ctx, module_name: str) -> dict:
+async def odoo_knowledge_module_info(ctx: Context, module_name: str) -> dict:
     """Get curated knowledge about a module — models, fields, workflows, customizations."""
     from odooforge.tools.knowledge import odoo_knowledge_module_info as _impl
     return await _impl(module_name)
 
 
 @mcp.tool()
-async def odoo_knowledge_search(ctx, query: str) -> dict:
+async def odoo_knowledge_search(ctx: Context, query: str) -> dict:
     """Search the knowledge base for Odoo information."""
     from odooforge.tools.knowledge import odoo_knowledge_search as _impl
     return await _impl(query)
 
 
 @mcp.tool()
-async def odoo_knowledge_community_gaps(ctx, db_name: str) -> dict:
+async def odoo_knowledge_community_gaps(ctx: Context, db_name: str) -> dict:
     """Analyze installed modules and suggest missing modules/configurations."""
     from odooforge.tools.knowledge import odoo_knowledge_community_gaps as _impl
     s = _state(ctx)
@@ -873,7 +873,7 @@ async def odoo_knowledge_community_gaps(ctx, db_name: str) -> dict:
 # ── Diagnostics ───────────────────────────────────────────────────
 
 @mcp.tool()
-async def odoo_diagnostics_health_check(ctx, db_name: str) -> dict:
+async def odoo_diagnostics_health_check(ctx: Context, db_name: str) -> dict:
     """Run a comprehensive health check: Docker, DB, auth, modules, logs."""
     from odooforge.tools.diagnostics import odoo_diagnostics_health_check as _impl
     s = _state(ctx)
@@ -883,7 +883,7 @@ async def odoo_diagnostics_health_check(ctx, db_name: str) -> dict:
 # ── Recipe Tools ──────────────────────────────────────────────────
 
 @mcp.tool()
-async def odoo_recipe_list(ctx) -> dict:
+async def odoo_recipe_list(ctx: Context) -> dict:
     """List all available industry setup recipes (restaurant, ecommerce, etc.)."""
     from odooforge.tools.recipes import odoo_recipe_list as _impl
     return await _impl()
@@ -891,7 +891,7 @@ async def odoo_recipe_list(ctx) -> dict:
 
 @mcp.tool()
 async def odoo_recipe_execute(
-    ctx, db_name: str, recipe_id: str, dry_run: bool = True,
+    ctx: Context, db_name: str, recipe_id: str, dry_run: bool = True,
 ) -> dict:
     """Execute an industry recipe. Use dry_run=True to preview first."""
     from odooforge.tools.recipes import odoo_recipe_execute as _impl
