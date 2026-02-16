@@ -140,3 +140,70 @@ class TestServerResources:
         data = json.loads(result)
         assert "error" in data
         assert "available" in data
+
+
+class TestServerPrompts:
+    def test_prompt_count(self):
+        from odooforge.server import mcp
+        prompts = mcp._prompt_manager._prompts
+        assert len(prompts) >= 4, f"Expected at least 4 prompts, got {len(prompts)}"
+
+    def test_business_setup_prompt_registered(self):
+        from odooforge.server import mcp
+        prompts = mcp._prompt_manager._prompts
+        assert "business-setup" in prompts
+
+    def test_feature_builder_prompt_registered(self):
+        from odooforge.server import mcp
+        prompts = mcp._prompt_manager._prompts
+        assert "feature-builder" in prompts
+
+    def test_module_generator_prompt_registered(self):
+        from odooforge.server import mcp
+        prompts = mcp._prompt_manager._prompts
+        assert "module-generator" in prompts
+
+    def test_troubleshooter_prompt_registered(self):
+        from odooforge.server import mcp
+        prompts = mcp._prompt_manager._prompts
+        assert "troubleshooter" in prompts
+
+    def test_business_setup_prompt_returns_content(self):
+        from odooforge.server import prompt_business_setup
+        result = prompt_business_setup()
+        assert isinstance(result, str)
+        assert len(result) > 100
+        assert "business" in result.lower()
+        assert "snapshot" in result.lower()
+
+    def test_feature_builder_prompt_returns_content(self):
+        from odooforge.server import prompt_feature_builder
+        result = prompt_feature_builder()
+        assert isinstance(result, str)
+        assert len(result) > 100
+        assert "x_" in result  # mentions x_ prefix convention
+
+    def test_module_generator_prompt_returns_content(self):
+        from odooforge.server import prompt_module_generator
+        result = prompt_module_generator()
+        assert isinstance(result, str)
+        assert len(result) > 100
+        assert "manifest" in result.lower() or "security" in result.lower()
+
+    def test_troubleshooter_prompt_returns_content(self):
+        from odooforge.server import prompt_troubleshooter
+        result = prompt_troubleshooter()
+        assert isinstance(result, str)
+        assert len(result) > 100
+        assert "snapshot" in result.lower()
+
+    def test_prompts_reference_knowledge_resources(self):
+        """Non-diagnostic workflow prompts should reference knowledge resources."""
+        from odooforge.server import (
+            prompt_business_setup, prompt_feature_builder,
+            prompt_module_generator,
+        )
+        for prompt_fn in [prompt_business_setup, prompt_feature_builder, prompt_module_generator]:
+            content = prompt_fn()
+            assert "odoo://knowledge/" in content, \
+                f"{prompt_fn.__name__} should reference knowledge resources"
