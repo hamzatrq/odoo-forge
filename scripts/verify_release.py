@@ -31,9 +31,17 @@ def verify_release():
             print("❌ 'odooforge' command not found. Please install via 'pip install odooforge'")
             sys.exit(1)
 
+    # Debug: Check installed version
+    try:
+        from importlib.metadata import version
+        v = version("odooforge")
+        print(f"📦 Installed OdooForge version: {v}")
+    except Exception:
+        print("⚠️ Could not determine installed version")
+
     print(f"🚀 Launching OdooForge via: {' '.join(cmd)}")
     
-    print(f"🚀 Launching OdooForge via: {' '.join(cmd)}")
+
     
     # NOTE: We do not inject DOCKER_COMPOSE_PATH here to verify 
     # that the installed package can find its own bundled docker-compose.yml (v0.1.2+)
