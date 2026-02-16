@@ -63,3 +63,80 @@ class TestServerInit:
     def test_main_entry_point_exists(self):
         from odooforge.server import main
         assert callable(main)
+
+
+class TestServerResources:
+    def test_modules_resource_registered(self):
+        from odooforge.server import mcp
+        resources = mcp._resource_manager._resources
+        assert any("modules" in str(uri) for uri in resources), \
+            f"modules resource not found in {list(resources.keys())}"
+
+    def test_dictionary_resource_registered(self):
+        from odooforge.server import mcp
+        resources = mcp._resource_manager._resources
+        assert any("dictionary" in str(uri) for uri in resources), \
+            f"dictionary resource not found in {list(resources.keys())}"
+
+    def test_patterns_resource_registered(self):
+        from odooforge.server import mcp
+        resources = mcp._resource_manager._resources
+        assert any("patterns" in str(uri) for uri in resources), \
+            f"patterns resource not found in {list(resources.keys())}"
+
+    def test_best_practices_resource_registered(self):
+        from odooforge.server import mcp
+        resources = mcp._resource_manager._resources
+        assert any("best-practices" in str(uri) for uri in resources), \
+            f"best-practices resource not found in {list(resources.keys())}"
+
+    def test_blueprints_index_resource_registered(self):
+        from odooforge.server import mcp
+        resources = mcp._resource_manager._resources
+        assert any("blueprints" in str(uri) for uri in resources), \
+            f"blueprints resource not found in {list(resources.keys())}"
+
+    def test_blueprint_template_resource_registered(self):
+        from odooforge.server import mcp
+        templates = mcp._resource_manager._templates
+        assert any("{industry}" in str(t) for t in templates), \
+            f"Blueprint template resource not found in {list(templates.keys())}"
+
+    def test_resource_count_minimum(self):
+        from odooforge.server import mcp
+        resources = mcp._resource_manager._resources
+        templates = mcp._resource_manager._templates
+        total = len(resources) + len(templates)
+        assert total >= 6, f"Expected at least 6 resources, got {total}"
+
+    def test_knowledge_modules_returns_valid_json(self):
+        import json
+        from odooforge.server import knowledge_modules
+        result = knowledge_modules()
+        data = json.loads(result)
+        assert isinstance(data, dict)
+        assert "sale" in data
+
+    def test_knowledge_dictionary_returns_valid_json(self):
+        import json
+        from odooforge.server import knowledge_dictionary
+        result = knowledge_dictionary()
+        data = json.loads(result)
+        assert isinstance(data, dict)
+        assert "customer" in data
+
+    def test_knowledge_blueprint_returns_valid_json(self):
+        import json
+        from odooforge.server import knowledge_blueprint
+        result = knowledge_blueprint("bakery")
+        data = json.loads(result)
+        assert isinstance(data, dict)
+        assert "modules" in data
+
+    def test_knowledge_blueprint_unknown_returns_error(self):
+        import json
+        from odooforge.server import knowledge_blueprint
+        result = knowledge_blueprint("nonexistent")
+        data = json.loads(result)
+        assert "error" in data
+        assert "available" in data

@@ -58,3 +58,20 @@ class KnowledgeBase:
     def get_blueprint(self, blueprint_id: str) -> dict[str, Any] | None:
         """Return a single blueprint by ID, or None if not found."""
         return self._blueprints.get(blueprint_id)
+
+
+_kb: KnowledgeBase | None = None
+
+
+def get_knowledge_base() -> KnowledgeBase:
+    """Get the global KnowledgeBase instance (lazy-initialized)."""
+    global _kb
+    if _kb is None:
+        _kb = KnowledgeBase()
+    return _kb
+
+
+def _reset_knowledge_base() -> None:
+    """Reset the singleton (for testing only)."""
+    global _kb
+    _kb = None

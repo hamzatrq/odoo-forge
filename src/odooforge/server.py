@@ -5,6 +5,7 @@ Entry point for the FastMCP server that exposes all OdooForge tools.
 
 from __future__ import annotations
 
+import json
 import logging
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -90,6 +91,85 @@ mcp = FastMCP(
 def _state(ctx) -> AppState:
     """Extract AppState from the MCP context."""
     return ctx.request_context.lifespan_context
+
+
+# ── MCP Resources (Domain Knowledge) ─────────────────────────────
+
+@mcp.resource(
+    "odoo://knowledge/modules",
+    name="Odoo Module Catalog",
+    description="Odoo 18 modules mapped to business needs with descriptions and dependencies.",
+    mime_type="application/json",
+)
+def knowledge_modules() -> str:
+    from odooforge.knowledge import get_knowledge_base
+    return json.dumps(get_knowledge_base().get_modules(), indent=2)
+
+
+@mcp.resource(
+    "odoo://knowledge/dictionary",
+    name="Business-to-Odoo Dictionary",
+    description="Maps business terms (customer, invoice, warehouse) to Odoo models with filters and tips.",
+    mime_type="application/json",
+)
+def knowledge_dictionary() -> str:
+    from odooforge.knowledge import get_knowledge_base
+    return json.dumps(get_knowledge_base().get_dictionary(), indent=2)
+
+
+@mcp.resource(
+    "odoo://knowledge/patterns",
+    name="Data Model Patterns",
+    description="Common Odoo customization patterns with ingredients and approach (configuration vs code generation).",
+    mime_type="application/json",
+)
+def knowledge_patterns() -> str:
+    from odooforge.knowledge import get_knowledge_base
+    return json.dumps(get_knowledge_base().get_patterns(), indent=2)
+
+
+@mcp.resource(
+    "odoo://knowledge/best-practices",
+    name="Odoo Best Practices",
+    description="Odoo conventions and guidelines for naming, security, views, performance, and automation.",
+    mime_type="application/json",
+)
+def knowledge_best_practices() -> str:
+    from odooforge.knowledge import get_knowledge_base
+    return json.dumps(get_knowledge_base().get_best_practices(), indent=2)
+
+
+@mcp.resource(
+    "odoo://knowledge/blueprints",
+    name="Industry Blueprints Index",
+    description="List of available industry blueprints with names and descriptions.",
+    mime_type="application/json",
+)
+def knowledge_blueprints_index() -> str:
+    from odooforge.knowledge import get_knowledge_base
+    kb = get_knowledge_base()
+    index = {}
+    for bp_id in kb.list_blueprints():
+        bp = kb.get_blueprint(bp_id)
+        if bp:
+            index[bp_id] = {"name": bp["name"], "description": bp["description"]}
+    return json.dumps(index, indent=2)
+
+
+@mcp.resource(
+    "odoo://knowledge/blueprints/{industry}",
+    name="Industry Blueprint",
+    description="Detailed industry blueprint with modules, models, automations, and settings.",
+    mime_type="application/json",
+)
+def knowledge_blueprint(industry: str) -> str:
+    from odooforge.knowledge import get_knowledge_base
+    kb = get_knowledge_base()
+    bp = kb.get_blueprint(industry)
+    if bp is None:
+        available = kb.list_blueprints()
+        return json.dumps({"error": f"Unknown industry: {industry}", "available": available})
+    return json.dumps(bp, indent=2)
 
 
 # ── Instance Management Tools ──────────────────────────────────────
