@@ -157,6 +157,6 @@ Show me the available recipes, then run the ecommerce recipe in dry-run mode
 ## Next Steps
 
 - [Configuration Reference](configuration.md) — All environment variables and Docker setup
-- [Tool Reference](tools/overview.md) — Complete documentation for all 71 tools
+- [Tool Reference](tools/overview.md) — Complete documentation for all 79 tools
 - [Architecture](architecture.md) — How OdooForge works under the hood
 - [Industry Recipes](recipes.md) — Pre-built setups for common business types

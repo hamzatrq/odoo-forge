@@ -1,17 +1,25 @@
 # Architecture
 
-OdooForge is structured as a layered MCP server that bridges AI assistants to Odoo 18 instances.
+OdooForge is a multi-layered MCP server that bridges AI assistants to Odoo 18 instances. Beyond basic tools, it provides domain knowledge, planning intelligence, workflow orchestration, and code generation.
 
 ## System Overview
 
 ```mermaid
 graph TB
-    AI["AI Assistant<br/>(Claude / Cursor)"] -->|"MCP Protocol<br/>stdio transport"| Server["OdooForge Server<br/>FastMCP"]
+    AI["AI Assistant<br/>(Claude / Cursor)"] -->|"MCP Protocol<br/>stdio transport"| Server["OdooForge Server<br/>FastMCP · 79 tools · 5 resources · 4 prompts"]
 
-    Server --> Tools["Tool Layer<br/>16 modules, 71 tools"]
-    Tools --> Utils["Utility Layer"]
-    Tools --> Verify["Verification Layer"]
-    Tools --> Conn["Connection Layer"]
+    Server --> L3["Layer 3: Planning"]
+    Server --> L2["Layer 2: Workflows"]
+    Server --> L1["Layer 1: Knowledge"]
+    Server --> L0["Layer 0: Core Tools<br/>17 modules, 71 tools"]
+
+    L3 --> L1
+    L2 --> L1
+    L2 --> Codegen["Code Generation"]
+
+    L0 --> Utils["Utility Layer"]
+    L0 --> Verify["Verification Layer"]
+    L0 --> Conn["Connection Layer"]
 
     Conn --> RPC["XML-RPC Client"]
     Conn --> Docker["Docker Client"]
@@ -28,7 +36,7 @@ graph TB
 
 ### MCP Server (`server.py`)
 
-The entry point. Uses [FastMCP](https://github.com/jlowin/fastmcp) to register all 71 tools and manage the application lifecycle. On startup, it:
+The entry point. Uses [FastMCP](https://github.com/jlowin/fastmcp) to register all 79 tools, 5 resources, and 4 prompts. On startup, it:
 
 1. Loads configuration from environment
 2. Initializes connection clients (Docker, XML-RPC, PostgreSQL)
@@ -37,7 +45,7 @@ The entry point. Uses [FastMCP](https://github.com/jlowin/fastmcp) to register a
 
 ### Tool Layer (`tools/`)
 
-Each tool category lives in its own module. Tools are pure async functions that accept connection clients as parameters. They:
+Each tool category lives in its own module (20 modules total). Tools are pure async functions that accept connection clients as parameters. They:
 
 - Validate inputs using `utils/validators.py`
 - Execute operations via connection clients
@@ -63,6 +71,59 @@ Each tool category lives in its own module. Tools are pure async functions that 
 | `knowledge.py` | 3 | Built-in module knowledge |
 | `recipes.py` | 2 | Industry setup recipes |
 | `diagnostics.py` | 1 | Health check |
+| `planning.py` | 3 | Requirements analysis and solution design |
+| `workflows.py` | 4 | Business setup and feature workflows |
+| `codegen.py` | 1 | Addon code generation |
+
+### Knowledge Layer (`knowledge/`)
+
+Provides structured domain knowledge via MCP resources (`odoo://` URIs):
+
+| Resource URI | Content |
+|-------------|---------|
+| `odoo://knowledge/modules` | 35 Odoo 18 modules with business-language descriptions, use cases, and dependencies |
+| `odoo://knowledge/blueprints` | 9 industry blueprints with module lists, settings, and custom field recommendations |
+| `odoo://knowledge/dictionary` | Business term → Odoo model/field mapping for natural language understanding |
+| `odoo://knowledge/best-practices` | Naming conventions (`x_` prefix), field design rules, security patterns |
+| `odoo://knowledge/patterns` | Common patterns: trackable models, partner extensions, approval workflows |
+
+The knowledge base is a singleton (`KnowledgeBase`) initialized on first access. Planning and workflow tools query it to make domain-informed decisions.
+
+### Planning Layer (`planning/`)
+
+Handles natural language → structured plan conversion:
+
+| Module | Purpose |
+|--------|---------|
+| `requirement_parser.py` | Parses business descriptions into structured requirements (industry, modules, custom needs) |
+| `solution_designer.py` | Converts requirements into phased implementation plans with ordered steps |
+
+Planning tools consult the knowledge base to match modules, select blueprints, and validate against best practices.
+
+### Workflow Layer (`workflows/`)
+
+Generates ordered step plans for complex multi-tool operations:
+
+| Module | Steps Generated |
+|--------|----------------|
+| `setup_business.py` | Snapshot → company config → module install → settings → custom fields → automations → health check |
+| `create_feature.py` | Snapshot → create fields → modify form view → modify tree view → optional automation → verify |
+| `create_dashboard.py` | Snapshot → create action windows → create parent menu → child menu items → health check |
+| `setup_integration.py` | Routes by type (email/payment/shipping) → type-specific setup steps |
+
+Workflow tools return step lists — the AI assistant executes each step using core tools.
+
+### Code Generation (`codegen/`)
+
+Generates complete Odoo addon source code from model specifications:
+
+| Module | Output |
+|--------|--------|
+| `addon_builder.py` | Orchestrates all generators, auto-detects dependencies |
+| `manifest_gen.py` | `__manifest__.py` with correct data paths and depends |
+| `model_gen.py` | Python model classes with fields, inheritance, and mixins |
+| `view_gen.py` | XML views (tree, form, search) + actions + menu items |
+| `security_gen.py` | `ir.model.access.csv` + security group XML |
 
 ### Connection Layer (`connections/`)
 

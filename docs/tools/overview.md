@@ -1,6 +1,6 @@
 # Tool Reference
 
-OdooForge provides **71 MCP tools** across **16 categories**. Each tool is documented with its parameters, return values, and usage examples.
+OdooForge provides **79 MCP tools** across **20 categories**. Each tool is documented with its parameters, return values, and usage examples.
 
 ## Quick Reference
 
@@ -23,6 +23,9 @@ OdooForge provides **71 MCP tools** across **16 categories**. Each tool is docum
 | [Knowledge](knowledge.md) | 3 | Module info, search, gaps | Built-in guidance |
 | [Recipes](recipes.md) | 2 | List, execute | Industry setup |
 | [Diagnostics](diagnostics.md) | 1 | Health check | System diagnostics |
+| [Planning](planning.md) | 3 | Analyze, design, validate | AI-driven planning |
+| [Workflows](workflows.md) | 4 | Setup business, features, dashboards, integrations | Multi-step orchestration |
+| [Code Generation](codegen.md) | 1 | Generate addon | Addon scaffolding |
 
 ## Common Patterns
 
