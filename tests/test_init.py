@@ -28,9 +28,9 @@ def test_creates_all_expected_files(workspace: Path) -> None:
     created = {p for p, s in results if s == "created"}
 
     expected = {
-        str(workspace / "skills" / "odoo-brainstorm.md"),
-        str(workspace / "skills" / "odoo-architect.md"),
-        str(workspace / "skills" / "odoo-debug.md"),
+        str(workspace / ".claude" / "skills" / "odoo-brainstorm" / "SKILL.md"),
+        str(workspace / ".claude" / "skills" / "odoo-architect" / "SKILL.md"),
+        str(workspace / ".claude" / "skills" / "odoo-debug" / "SKILL.md"),
         str(workspace / "CLAUDE.md"),
         str(workspace / ".cursor" / "mcp.json"),
         str(workspace / ".windsurf" / "mcp.json"),
@@ -49,8 +49,8 @@ def test_creates_all_expected_files(workspace: Path) -> None:
 
 def test_skill_files_have_content(workspace: Path) -> None:
     run_init(workspace)
-    for name in ("odoo-brainstorm.md", "odoo-architect.md", "odoo-debug.md"):
-        content = (workspace / "skills" / name).read_text()
+    for name in ("odoo-brainstorm", "odoo-architect", "odoo-debug"):
+        content = (workspace / ".claude" / "skills" / name / "SKILL.md").read_text()
         assert len(content) > 100, f"{name} seems too short"
         assert "---" in content  # frontmatter present
 
@@ -178,9 +178,9 @@ def test_update_overwrites_template_files(workspace: Path) -> None:
 
     # Template files should be updated
     assert status_map[str(workspace / "CLAUDE.md")] == "updated"
-    assert status_map[str(workspace / "skills" / "odoo-brainstorm.md")] == "updated"
-    assert status_map[str(workspace / "skills" / "odoo-architect.md")] == "updated"
-    assert status_map[str(workspace / "skills" / "odoo-debug.md")] == "updated"
+    assert status_map[str(workspace / ".claude" / "skills" / "odoo-brainstorm" / "SKILL.md")] == "updated"
+    assert status_map[str(workspace / ".claude" / "skills" / "odoo-architect" / "SKILL.md")] == "updated"
+    assert status_map[str(workspace / ".claude" / "skills" / "odoo-debug" / "SKILL.md")] == "updated"
     assert status_map[str(workspace / ".cursor" / "mcp.json")] == "updated"
     assert status_map[str(workspace / ".windsurf" / "mcp.json")] == "updated"
     assert status_map[str(workspace / "docker" / "docker-compose.yml")] == "updated"

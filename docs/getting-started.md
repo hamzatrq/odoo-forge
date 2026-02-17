@@ -35,10 +35,10 @@ This scaffolds everything you need:
 .
 ├── CLAUDE.md                  # AI assistant context
 ├── .env                       # Connection settings (edit this!)
-├── skills/                    # Claude Code skills
-│   ├── odoo-brainstorm.md
-│   ├── odoo-architect.md
-│   └── odoo-debug.md
+├── .claude/skills/            # Claude Code skills
+│   ├── odoo-brainstorm/SKILL.md
+│   ├── odoo-architect/SKILL.md
+│   └── odoo-debug/SKILL.md
 ├── docker/
 │   ├── docker-compose.yml     # Odoo 18 + PostgreSQL 17
 │   └── odoo.conf

@@ -64,10 +64,10 @@ OdooForge exposes 79 MCP tools across these categories:
 
 ## Skills
 
-The `skills/` directory contains Claude Code skills for guided workflows:
-- **odoo-brainstorm** — Explore Odoo customization ideas
-- **odoo-architect** — Design data models with best practices
-- **odoo-debug** — Diagnose and fix Odoo issues
+The `.claude/skills/` directory contains Claude Code skills for guided workflows:
+- **/odoo-brainstorm** — Explore Odoo customization ideas
+- **/odoo-architect** — Design data models with best practices
+- **/odoo-debug** — Diagnose and fix Odoo issues
 
 ## Custom Addons
 
@@ -149,8 +149,13 @@ def _copy_file(src: Path, dst: Path, results: list[Result], *, update: bool = Fa
 
 def _copy_skills(target: Path, results: list[Result], *, update: bool = False) -> None:
     skills_src = _pkg_data() / "skills"
-    for name in ("odoo-brainstorm.md", "odoo-architect.md", "odoo-debug.md"):
-        _copy_file(skills_src / name, target / "skills" / name, results, update=update)
+    for name in ("odoo-brainstorm", "odoo-architect", "odoo-debug"):
+        _copy_file(
+            skills_src / name / "SKILL.md",
+            target / ".claude" / "skills" / name / "SKILL.md",
+            results,
+            update=update,
+        )
 
 
 def _create_claude_md(target: Path, results: list[Result], *, update: bool = False) -> None:

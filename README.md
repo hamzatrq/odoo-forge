@@ -62,7 +62,7 @@ This scaffolds everything you need in the current directory:
 .
 ├── CLAUDE.md                  # AI assistant context
 ├── .env                       # Connection settings (fill in your details)
-├── skills/                    # Claude Code skills (brainstorm, architect, debug)
+├── .claude/skills/            # Claude Code skills (/odoo-brainstorm, /odoo-architect, /odoo-debug)
 ├── docker/
 │   ├── docker-compose.yml     # Odoo 18 + PostgreSQL 17
 │   └── odoo.conf
@@ -213,13 +213,13 @@ Guided workflows that provide step-by-step instructions:
 
 ### Claude Code Skills (3)
 
-Deep-context skills for Claude Code users:
+Slash-command skills for Claude Code users (installed to `.claude/skills/` by `odooforge init`):
 
 | Skill | Description |
 |-------|-------------|
-| `odoo-brainstorm` | Explore customization ideas, discover modules, match blueprints |
-| `odoo-architect` | Design data models with naming conventions and security |
-| `odoo-debug` | Diagnose issues with error mapping and snapshot rollback |
+| `/odoo-brainstorm` | Explore customization ideas, discover modules, match blueprints |
+| `/odoo-architect` | Design data models with naming conventions and security |
+| `/odoo-debug` | Diagnose issues with error mapping and snapshot rollback |
 
 ## 🍳 Industry Recipes
 
