@@ -34,7 +34,7 @@ Repository = "https://github.com/hamzatrq/odoo-forge"
 Issues = "https://github.com/hamzatrq/odoo-forge/issues"
 
 [project.scripts]
-odooforge = "odooforge.server:main"
+odooforge = "odooforge.cli:main"
 
 [build-system]
 requires = ["hatchling"]
