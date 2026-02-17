@@ -1283,6 +1283,77 @@ async def odoo_validate_plan(ctx: Context, plan: dict) -> dict:
     return await _impl(plan)
 
 
+# ── Workflow Tools ────────────────────────────────────────────────
+
+@mcp.tool()
+async def odoo_setup_business(
+    ctx: Context,
+    blueprint_name: str,
+    company_name: str,
+    db_name: str,
+    locations: int = 1,
+    dry_run: bool = True,
+) -> dict:
+    """Set up a complete business from an industry blueprint.
+    Returns a step-by-step execution plan. Use dry_run=False to get steps ready for execution.
+    Available blueprints: bakery, restaurant, ecommerce, manufacturing, services, retail, healthcare, education, real_estate.
+    """
+    from odooforge.tools.workflows import odoo_setup_business as _impl
+    return await _impl(blueprint_name, company_name, db_name, locations, dry_run)
+
+
+@mcp.tool()
+async def odoo_create_feature(
+    ctx: Context,
+    feature_name: str,
+    target_model: str,
+    fields: list[dict],
+    db_name: str,
+    add_to_views: bool = True,
+    automation: dict | None = None,
+    dry_run: bool = True,
+) -> dict:
+    """Build a complete feature on a model in one call.
+    Generates steps to create fields, modify views, and optionally add automation.
+    Each field dict needs: name, type, label.
+    """
+    from odooforge.tools.workflows import odoo_create_feature as _impl
+    return await _impl(feature_name, target_model, fields, db_name, add_to_views, automation, dry_run)
+
+
+@mcp.tool()
+async def odoo_create_dashboard(
+    ctx: Context,
+    dashboard_name: str,
+    metrics: list[dict],
+    db_name: str,
+    dry_run: bool = True,
+) -> dict:
+    """Build a management dashboard with graph/pivot views and menu items.
+    Each metric dict needs: model, measure, label.
+    Returns a step-by-step execution plan.
+    """
+    from odooforge.tools.workflows import odoo_create_dashboard as _impl
+    return await _impl(dashboard_name, metrics, db_name, dry_run)
+
+
+@mcp.tool()
+async def odoo_setup_integration(
+    ctx: Context,
+    integration_type: str,
+    provider: str,
+    db_name: str,
+    settings: dict,
+    dry_run: bool = True,
+) -> dict:
+    """Configure an external integration (email, payment, or shipping).
+    Generates steps to install modules, configure providers, and test connections.
+    Supported types: email, payment, shipping.
+    """
+    from odooforge.tools.workflows import odoo_setup_integration as _impl
+    return await _impl(integration_type, provider, db_name, settings, dry_run)
+
+
 # ── Recipe Tools ──────────────────────────────────────────────────
 
 @mcp.tool()
