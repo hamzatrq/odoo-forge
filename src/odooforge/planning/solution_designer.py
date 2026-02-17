@@ -41,7 +41,6 @@ def design_solution(
         phase_num += 1
 
     # Phase N: Custom features (one phase per custom requirement)
-    custom_phase_start = phase_num
     for req in requirements.get("custom_requirements", []):
         feature_steps = _build_feature_phase(req)
         phases.append({
@@ -208,6 +207,12 @@ def _build_feature_phase(requirement: dict) -> list[dict]:
                 "tool": "odoo_report_modify",
                 "params": {},
                 "description": f"Create/modify report: {requirement.get('description', pattern)[:40]}",
+            })
+        if "import" in pattern or "data" in pattern:
+            steps.append({
+                "tool": "odoo_import_execute",
+                "params": {},
+                "description": f"Set up data import for: {requirement.get('description', pattern)[:40]}",
             })
     else:
         steps.append({

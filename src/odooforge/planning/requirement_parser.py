@@ -1,5 +1,6 @@
 """Requirement parser — extract Odoo requirements from natural language."""
 from __future__ import annotations
+import re
 from typing import Any
 from odooforge.knowledge import get_knowledge_base
 
@@ -114,14 +115,14 @@ def _match_modules(desc: str, kb) -> list[dict]:
                 "score": score,
             })
 
-    # Sort by score descending, deduplicate
+    # Sort by score descending
     matched.sort(key=lambda m: m["score"], reverse=True)
 
-    # Remove score from output
-    for m in matched:
-        del m["score"]
-
-    return matched
+    # Return without internal score field
+    return [
+        {"module": m["module"], "name": m["name"], "reason": m["reason"]}
+        for m in matched
+    ]
 
 
 def _detect_custom_requirements(desc: str, kb) -> list[dict]:
@@ -156,8 +157,6 @@ def _detect_custom_requirements(desc: str, kb) -> list[dict]:
 
 def _detect_infrastructure(desc: str) -> dict[str, Any]:
     """Detect infrastructure needs from the description."""
-    import re
-
     # Multi-company / multi-location detection
     multi_location = False
     locations = 0
