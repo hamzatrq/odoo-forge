@@ -1247,6 +1247,42 @@ async def odoo_diagnostics_health_check(ctx: Context, db_name: str) -> dict:
     return await _impl(s.rpc, s.docker, s.pg, db_name)
 
 
+# ── Planning Tools ────────────────────────────────────────────────
+
+@mcp.tool()
+async def odoo_analyze_requirements(ctx: Context, description: str) -> dict:
+    """Analyze a business description and return structured Odoo requirements.
+    Identifies matching blueprints, needed modules, custom requirements, and questions.
+    Example: 'I run a bakery with 3 locations and delivery'
+    """
+    from odooforge.tools.planning import odoo_analyze_requirements as _impl
+    return await _impl(description)
+
+
+@mcp.tool()
+async def odoo_design_solution(
+    ctx: Context,
+    requirements: dict,
+    user_answers: dict | None = None,
+) -> dict:
+    """Turn analyzed requirements into a phased execution plan (DAG).
+    Takes output from odoo_analyze_requirements + optional user answers.
+    Returns phases with tool calls, dependencies, and parallelization hints.
+    """
+    from odooforge.tools.planning import odoo_design_solution as _impl
+    return await _impl(requirements, user_answers)
+
+
+@mcp.tool()
+async def odoo_validate_plan(ctx: Context, plan: dict) -> dict:
+    """Validate an execution plan before running it.
+    Checks module compatibility, field naming, dependency ordering, and safety.
+    Returns pass/warning/fail for each check with recommendations.
+    """
+    from odooforge.tools.planning import odoo_validate_plan as _impl
+    return await _impl(plan)
+
+
 # ── Recipe Tools ──────────────────────────────────────────────────
 
 @mcp.tool()

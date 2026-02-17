@@ -12,7 +12,7 @@ class TestServerInit:
     def test_tool_count(self):
         from odooforge.server import mcp
         tools = mcp._tool_manager._tools
-        assert len(tools) == 71, f"Expected 71 tools, got {len(tools)}: {list(tools.keys())}"
+        assert len(tools) == 74, f"Expected 74 tools, got {len(tools)}: {list(tools.keys())}"
 
     def test_expected_tools_registered(self):
         from odooforge.server import mcp
@@ -55,6 +55,8 @@ class TestServerInit:
             "odoo_knowledge_module_info", "odoo_knowledge_search",
             "odoo_knowledge_community_gaps",
             "odoo_diagnostics_health_check",
+            # Planning
+            "odoo_analyze_requirements", "odoo_design_solution", "odoo_validate_plan",
             # Phase 5
             "odoo_recipe_list", "odoo_recipe_execute",
         }
