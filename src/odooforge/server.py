@@ -1354,6 +1354,29 @@ async def odoo_setup_integration(
     return await _impl(integration_type, provider, db_name, settings, dry_run)
 
 
+# ── Code Generation ──────────────────────────────────────────────
+
+@mcp.tool()
+async def odoo_generate_addon(
+    ctx: Context,
+    module_name: str,
+    models: list[dict],
+    version: str = "18.0.1.0.0",
+    author: str = "OdooForge",
+    category: str = "Customizations",
+    description: str = "",
+    depends: list[str] | None = None,
+    security_groups: list[dict] | None = None,
+) -> dict:
+    """Generate a complete installable Odoo 18 module as code.
+    Returns all file contents (manifest, models, views, security).
+    Each model dict needs: name, description, fields (list of {name, type, string}).
+    Optional: inherit (list of mixins like 'mail.thread'), security_groups.
+    """
+    from odooforge.tools.codegen import odoo_generate_addon as _impl
+    return await _impl(module_name, models, version, author, category, description, depends, security_groups)
+
+
 # ── Recipe Tools ──────────────────────────────────────────────────
 
 @mcp.tool()

@@ -12,7 +12,7 @@ class TestServerInit:
     def test_tool_count(self):
         from odooforge.server import mcp
         tools = mcp._tool_manager._tools
-        assert len(tools) == 78, f"Expected 78 tools, got {len(tools)}: {list(tools.keys())}"
+        assert len(tools) == 79, f"Expected 79 tools, got {len(tools)}: {list(tools.keys())}"
 
     def test_expected_tools_registered(self):
         from odooforge.server import mcp
@@ -60,7 +60,9 @@ class TestServerInit:
             # Workflows
             "odoo_setup_business", "odoo_create_feature",
             "odoo_create_dashboard", "odoo_setup_integration",
-            # Phase 5
+            # Code Generation
+            "odoo_generate_addon",
+            # Recipes
             "odoo_recipe_list", "odoo_recipe_execute",
         }
         assert expected.issubset(tools), f"Missing tools: {expected - tools}"
