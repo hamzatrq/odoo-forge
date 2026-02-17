@@ -60,8 +60,8 @@ def setup_business(
     steps.append({
         "step": step_num,
         "tool": "odoo_module_install",
-        "params": {"db_name": db_name, "module_names": bp["modules"]},
-        "description": f"Install {len(bp['modules'])} modules",
+        "params": {"db_name": db_name, "module_names": bp.get("modules", [])},
+        "description": f"Install {len(bp.get('modules', []))} modules",
     })
     step_num += 1
 
@@ -160,7 +160,7 @@ def setup_business(
         "steps": steps,
         "summary": {
             "total_steps": len(steps),
-            "modules_to_install": len(bp["modules"]),
+            "modules_to_install": len(bp.get("modules", [])),
             "custom_fields": custom_field_count,
             "automations": len(bp.get("automations", [])),
             "locations": locations,

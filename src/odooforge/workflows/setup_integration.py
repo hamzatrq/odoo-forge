@@ -44,11 +44,11 @@ def setup_integration(
     step_num += 1
 
     if integration_type == "email":
-        steps.extend(_email_steps(db_name, provider, settings, step_num))
+        steps.extend(_email_steps(db_name, provider, settings))
     elif integration_type == "payment":
-        steps.extend(_payment_steps(db_name, provider, settings, step_num))
+        steps.extend(_payment_steps(db_name, provider, settings))
     elif integration_type == "shipping":
-        steps.extend(_shipping_steps(db_name, provider, settings, step_num))
+        steps.extend(_shipping_steps(db_name, provider, settings))
 
     # Re-number steps after extending
     for i, s in enumerate(steps):
@@ -78,14 +78,14 @@ def setup_integration(
 
 
 def _email_steps(
-    db_name: str, provider: str, settings: dict[str, Any], step_num: int,
+    db_name: str, provider: str, settings: dict[str, Any],
 ) -> list[dict[str, Any]]:
     """Generate steps for email integration."""
     steps: list[dict[str, Any]] = []
 
     # Configure outgoing mail server
     steps.append({
-        "step": step_num,
+        "step": 0,
         "tool": "odoo_email_configure_outgoing",
         "params": {
             "db_name": db_name,
@@ -100,7 +100,7 @@ def _email_steps(
 
     # Configure incoming mail server
     steps.append({
-        "step": step_num + 1,
+        "step": 0,
         "tool": "odoo_email_configure_incoming",
         "params": {
             "db_name": db_name,
@@ -116,7 +116,7 @@ def _email_steps(
 
     # Test email
     steps.append({
-        "step": step_num + 2,
+        "step": 0,
         "tool": "odoo_email_test",
         "params": {"db_name": db_name},
         "description": "Test email configuration",
@@ -126,7 +126,7 @@ def _email_steps(
 
 
 def _payment_steps(
-    db_name: str, provider: str, settings: dict[str, Any], step_num: int,
+    db_name: str, provider: str, settings: dict[str, Any],
 ) -> list[dict[str, Any]]:
     """Generate steps for payment provider integration."""
     steps: list[dict[str, Any]] = []
@@ -143,7 +143,7 @@ def _payment_steps(
 
     # Install payment module
     steps.append({
-        "step": step_num,
+        "step": 0,
         "tool": "odoo_module_install",
         "params": {"db_name": db_name, "module_names": [module_name]},
         "description": f"Install payment module: {module_name}",
@@ -151,7 +151,7 @@ def _payment_steps(
 
     # Configure the payment provider
     steps.append({
-        "step": step_num + 1,
+        "step": 0,
         "tool": "odoo_record_create",
         "params": {
             "db_name": db_name,
@@ -170,7 +170,7 @@ def _payment_steps(
 
 
 def _shipping_steps(
-    db_name: str, provider: str, settings: dict[str, Any], step_num: int,
+    db_name: str, provider: str, settings: dict[str, Any],
 ) -> list[dict[str, Any]]:
     """Generate steps for shipping/delivery integration."""
     steps: list[dict[str, Any]] = []
@@ -187,7 +187,7 @@ def _shipping_steps(
 
     # Install delivery base + provider module
     steps.append({
-        "step": step_num,
+        "step": 0,
         "tool": "odoo_module_install",
         "params": {"db_name": db_name, "module_names": ["delivery", module_name]},
         "description": f"Install delivery modules: delivery, {module_name}",
@@ -195,7 +195,7 @@ def _shipping_steps(
 
     # Configure the carrier
     steps.append({
-        "step": step_num + 1,
+        "step": 0,
         "tool": "odoo_record_create",
         "params": {
             "db_name": db_name,

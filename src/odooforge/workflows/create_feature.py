@@ -79,9 +79,6 @@ def create_feature(
         step_num += 1
 
         # Tree view: add each field as a column
-        tree_field_nodes = " ".join(
-            f'<field name="{f["name"]}"/>' for f in fields
-        )
         steps.append({
             "step": step_num,
             "tool": "odoo_view_modify",
@@ -89,7 +86,7 @@ def create_feature(
                 "db_name": db_name,
                 "model": target_model,
                 "view_type": "tree",
-                "arch_snippet": tree_field_nodes,
+                "arch_snippet": field_xml_nodes,
             },
             "description": f"Add {feature_name} fields to tree view",
         })
