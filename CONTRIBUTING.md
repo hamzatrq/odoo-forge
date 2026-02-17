@@ -65,7 +65,7 @@ uv run pytest tests/test_xmlrpc.py tests/test_docker.py -v
 
 ```
 src/odooforge/
-├── server.py              # MCP server entry point (71 tools registered)
+├── server.py              # MCP server entry point (79 tools, 5 resources, 4 prompts)
 ├── config.py              # Environment configuration
 ├── connections/           # External service clients
 │   ├── docker_client.py   # Docker Compose management
@@ -77,7 +77,26 @@ src/odooforge/
 │   ├── schema.py          # Custom fields/models
 │   ├── views.py           # View modification
 │   ├── reports.py         # QWeb reports
+│   ├── planning.py        # Requirements analysis & solution design
+│   ├── workflows.py       # Business setup & feature creation
+│   ├── codegen.py         # Addon code generation
 │   └── ...                # 11 more tool files
+├── knowledge/             # Domain knowledge (MCP resources)
+│   ├── knowledge_base.py  # Singleton KB with modules, blueprints, patterns
+│   └── data/              # Structured knowledge data
+├── planning/              # Planning engine
+│   ├── requirement_parser.py  # NL → structured requirements
+│   └── solution_designer.py   # Requirements → implementation plan
+├── workflows/             # Workflow orchestration
+│   ├── setup_business.py  # Full business deployment plans
+│   ├── create_feature.py  # Custom feature step plans
+│   ├── create_dashboard.py # Dashboard creation plans
+│   └── setup_integration.py # Integration setup plans
+├── codegen/               # Code generation engine
+│   ├── addon_builder.py   # Orchestrates full addon generation
+│   ├── model_gen.py       # Python model file generation
+│   ├── view_gen.py        # XML view generation
+│   └── security_gen.py    # Access rules & security groups
 ├── utils/                 # Shared utilities
 │   ├── validators.py      # Input validation
 │   ├── errors.py          # Custom error types
