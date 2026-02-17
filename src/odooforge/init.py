@@ -8,7 +8,7 @@ from pathlib import Path
 
 # ── Result tracking ───────────────────────────────────────────────
 
-Result = tuple[str, str]  # (relative_path, "created" | "skipped")
+Result = tuple[str, str]  # (relative_path, "created" | "skipped" | "updated")
 
 # ── Templates ─────────────────────────────────────────────────────
 
@@ -27,9 +27,20 @@ cd docker && docker compose up -d
 odooforge
 ```
 
+## Updating
+
+After upgrading OdooForge, update workspace files to the latest version:
+
+```bash
+pip install --upgrade odooforge
+odooforge init --update
+```
+
+Your `.env` is never overwritten.
+
 ## Environment
 
-- Copy `.env` and fill in your connection details
+- Edit `.env` with your connection details
 - Default Odoo URL: http://localhost:8069
 - Default credentials: admin / admin
 
@@ -104,22 +115,30 @@ def _pkg_data() -> Path:
     return importlib.resources.files("odooforge") / "data"  # type: ignore[return-value]
 
 
-def _write_if_missing(path: Path, content: str, results: list[Result]) -> None:
-    """Write *content* to *path* unless it already exists."""
+def _write_file(path: Path, content: str, results: list[Result], *, update: bool = False) -> None:
+    """Write *content* to *path*, optionally overwriting if *update* is set."""
     rel = str(path)
     if path.exists():
-        results.append((rel, "skipped"))
+        if update:
+            path.write_text(content)
+            results.append((rel, "updated"))
+        else:
+            results.append((rel, "skipped"))
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content)
     results.append((rel, "created"))
 
 
-def _copy_if_missing(src: Path, dst: Path, results: list[Result]) -> None:
-    """Copy *src* to *dst* unless *dst* already exists."""
+def _copy_file(src: Path, dst: Path, results: list[Result], *, update: bool = False) -> None:
+    """Copy *src* to *dst*, optionally overwriting if *update* is set."""
     rel = str(dst)
     if dst.exists():
-        results.append((rel, "skipped"))
+        if update:
+            shutil.copy2(src, dst)
+            results.append((rel, "updated"))
+        else:
+            results.append((rel, "skipped"))
         return
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dst)
@@ -128,29 +147,30 @@ def _copy_if_missing(src: Path, dst: Path, results: list[Result]) -> None:
 
 # ── Section builders ──────────────────────────────────────────────
 
-def _copy_skills(target: Path, results: list[Result]) -> None:
+def _copy_skills(target: Path, results: list[Result], *, update: bool = False) -> None:
     skills_src = _pkg_data() / "skills"
     for name in ("odoo-brainstorm.md", "odoo-architect.md", "odoo-debug.md"):
-        _copy_if_missing(skills_src / name, target / "skills" / name, results)
+        _copy_file(skills_src / name, target / "skills" / name, results, update=update)
 
 
-def _create_claude_md(target: Path, results: list[Result]) -> None:
-    _write_if_missing(target / "CLAUDE.md", _CLAUDE_MD, results)
+def _create_claude_md(target: Path, results: list[Result], *, update: bool = False) -> None:
+    _write_file(target / "CLAUDE.md", _CLAUDE_MD, results, update=update)
 
 
-def _create_mcp_configs(target: Path, results: list[Result]) -> None:
-    _write_if_missing(target / ".cursor" / "mcp.json", _CURSOR_MCP_JSON, results)
-    _write_if_missing(target / ".windsurf" / "mcp.json", _WINDSURF_MCP_JSON, results)
+def _create_mcp_configs(target: Path, results: list[Result], *, update: bool = False) -> None:
+    _write_file(target / ".cursor" / "mcp.json", _CURSOR_MCP_JSON, results, update=update)
+    _write_file(target / ".windsurf" / "mcp.json", _WINDSURF_MCP_JSON, results, update=update)
 
 
 def _copy_env(target: Path, results: list[Result]) -> None:
-    _copy_if_missing(_pkg_data() / ".env.example", target / ".env", results)
+    # Never overwrite .env — it contains user credentials.
+    _copy_file(_pkg_data() / ".env.example", target / ".env", results, update=False)
 
 
-def _copy_docker(target: Path, results: list[Result]) -> None:
+def _copy_docker(target: Path, results: list[Result], *, update: bool = False) -> None:
     data = _pkg_data()
-    _copy_if_missing(data / "docker-compose.yml", target / "docker" / "docker-compose.yml", results)
-    _copy_if_missing(data / "odoo.conf", target / "docker" / "odoo.conf", results)
+    _copy_file(data / "docker-compose.yml", target / "docker" / "docker-compose.yml", results, update=update)
+    _copy_file(data / "odoo.conf", target / "docker" / "odoo.conf", results, update=update)
 
 
 def _create_addons_dir(target: Path, results: list[Result]) -> None:
@@ -163,13 +183,24 @@ def _create_addons_dir(target: Path, results: list[Result]) -> None:
     results.append((str(keep), "created"))
 
 
-def _create_gitignore(target: Path, results: list[Result]) -> None:
+def _create_gitignore(target: Path, results: list[Result], *, update: bool = False) -> None:
     gi = target / ".gitignore"
     marker = "# OdooForge"
     if gi.exists():
         existing = gi.read_text()
         if marker in existing:
-            results.append((str(gi), "skipped"))
+            if update:
+                # Replace the OdooForge section in-place
+                import re
+                replaced = re.sub(
+                    r"# OdooForge\n(?:.*\n)*?(?=\n[^ \t#]|\n*$|\Z)",
+                    _GITIGNORE,
+                    existing,
+                )
+                gi.write_text(replaced)
+                results.append((str(gi), "updated"))
+            else:
+                results.append((str(gi), "skipped"))
             return
         # Append OdooForge section
         gi.write_text(existing.rstrip() + "\n\n" + _GITIGNORE)
@@ -183,6 +214,7 @@ def _create_gitignore(target: Path, results: list[Result]) -> None:
 
 def _print_summary(target: Path, results: list[Result]) -> None:
     created = [(p, s) for p, s in results if s == "created"]
+    updated = [(p, s) for p, s in results if s == "updated"]
     skipped = [(p, s) for p, s in results if s == "skipped"]
 
     print(f"\nOdooForge workspace initialized in {target.resolve()}\n")
@@ -190,6 +222,10 @@ def _print_summary(target: Path, results: list[Result]) -> None:
         print(f"  Created {len(created)} file(s):")
         for p, _ in created:
             print(f"    + {p}")
+    if updated:
+        print(f"  Updated {len(updated)} file(s):")
+        for p, _ in updated:
+            print(f"    ~ {p}")
     if skipped:
         print(f"  Skipped {len(skipped)} file(s) (already exist):")
         for p, _ in skipped:
@@ -204,21 +240,24 @@ def _print_summary(target: Path, results: list[Result]) -> None:
 
 # ── Main ──────────────────────────────────────────────────────────
 
-def run_init(target: Path | None = None) -> list[Result]:
+def run_init(target: Path | None = None, *, update: bool = False) -> list[Result]:
     """Initialize the current directory as an OdooForge workspace.
+
+    When *update* is ``True``, template files are overwritten with the
+    latest versions from the package.  ``.env`` is never overwritten.
 
     Returns the list of ``(path, status)`` results for testing.
     """
     target = target or Path(".")
     results: list[Result] = []
 
-    _copy_skills(target, results)
-    _create_claude_md(target, results)
-    _create_mcp_configs(target, results)
-    _copy_env(target, results)
-    _copy_docker(target, results)
+    _copy_skills(target, results, update=update)
+    _create_claude_md(target, results, update=update)
+    _create_mcp_configs(target, results, update=update)
+    _copy_env(target, results)  # always update=False
+    _copy_docker(target, results, update=update)
     _create_addons_dir(target, results)
-    _create_gitignore(target, results)
+    _create_gitignore(target, results, update=update)
     _print_summary(target, results)
 
     return results

@@ -1,42 +1,69 @@
 # Getting Started
 
-This guide will help you install OdooForge, connect it to an AI assistant, and start managing Odoo 18 with natural language.
+This guide will help you install OdooForge, set up a workspace, and start managing Odoo 18 with AI assistants.
 
 ## Prerequisites
 
 - **Python 3.11+**
 - **Docker** and **Docker Compose** (for hosting Odoo)
-- An MCP-compatible AI client (**Claude Desktop**, **Cursor**, or any MCP client)
+- An MCP-compatible AI client (**Claude Code**, **Claude Desktop**, **Cursor**, **Windsurf**, or any MCP client)
 
 ## Installation
-
-### Option 1: pip install (recommended)
 
 ```bash
 pip install odooforge
 ```
 
-### Option 2: Run directly with uvx
+Or run directly with uvx (no install needed):
 
 ```bash
 uvx odooforge
 ```
 
-### Option 3: From source
+## Initialize a Workspace
+
+Create a new project directory and run `odooforge init`:
 
 ```bash
-git clone https://github.com/hamzatrq/odoo-forge.git
-cd odoo-forge
-uv sync
+mkdir my-odoo-project && cd my-odoo-project
+odooforge init
 ```
 
-## Starting Odoo
+This scaffolds everything you need:
 
-OdooForge includes a Docker Compose file with Odoo 18 and PostgreSQL 17:
+```
+.
+├── CLAUDE.md                  # AI assistant context
+├── .env                       # Connection settings (edit this!)
+├── skills/                    # Claude Code skills
+│   ├── odoo-brainstorm.md
+│   ├── odoo-architect.md
+│   └── odoo-debug.md
+├── docker/
+│   ├── docker-compose.yml     # Odoo 18 + PostgreSQL 17
+│   └── odoo.conf
+├── addons/                    # Your custom Odoo modules
+├── .cursor/mcp.json           # Cursor MCP config (auto-configured)
+├── .windsurf/mcp.json         # Windsurf MCP config (auto-configured)
+└── .gitignore
+```
+
+### Updating After Upgrade
+
+After upgrading OdooForge (`pip install --upgrade odooforge`), update your workspace template files:
 
 ```bash
-# From the project directory
-docker compose -f docker/docker-compose.yml up -d
+odooforge init --update
+```
+
+This overwrites skills, configs, and Docker files with the latest versions. Your `.env` is **never** overwritten.
+
+## Start Odoo
+
+Edit `.env` with your connection details, then start the included Docker stack:
+
+```bash
+cd docker && docker compose up -d
 ```
 
 This starts:
@@ -49,6 +76,8 @@ curl http://localhost:8069/web/health
 ```
 
 ## Connect Your MCP Client
+
+The `odooforge init` command already creates MCP configs for **Cursor** and **Windsurf**. For other clients:
 
 ### Claude Desktop
 
@@ -75,35 +104,17 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-### Cursor
+### Claude Code
 
-Add to your Cursor MCP settings:
+No extra config needed — `odooforge init` creates the workspace `CLAUDE.md` and skills automatically. Add the MCP server to your Claude Code config:
 
-```json
-{
-  "mcpServers": {
-    "odooforge": {
-      "command": "uvx",
-      "args": ["odooforge"],
-      "env": {
-        "ODOO_URL": "http://localhost:8069",
-        "ODOO_DEFAULT_DB": "odoo",
-        "ODOO_ADMIN_USER": "admin",
-        "ODOO_ADMIN_PASSWORD": "admin",
-        "ODOO_MASTER_PASSWORD": "admin",
-        "POSTGRES_HOST": "localhost",
-        "POSTGRES_PORT": "5432",
-        "POSTGRES_USER": "odoo",
-        "POSTGRES_PASSWORD": "odoo"
-      }
-    }
-  }
-}
+```bash
+claude mcp add odooforge -- uvx odooforge
 ```
 
 ### Environment Variables
 
-Create a `.env` file in your working directory (see [Configuration](configuration.md) for all options):
+The `.env` file created by `odooforge init` contains all settings (see [Configuration](configuration.md) for details):
 
 ```bash
 ODOO_URL=http://localhost:8069

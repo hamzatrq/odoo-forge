@@ -29,6 +29,12 @@ pip install -e ".[dev]"
 # Start the MCP server
 uv run odooforge
 
+# Initialize a workspace (creates configs, skills, Docker files)
+uv run odooforge init
+
+# Update workspace templates to latest
+uv run odooforge init --update
+
 # Start an Odoo instance (optional, for integration testing)
 docker compose -f docker/docker-compose.yml up -d
 ```
@@ -65,7 +71,9 @@ uv run pytest tests/test_xmlrpc.py tests/test_docker.py -v
 
 ```
 src/odooforge/
-├── server.py              # MCP server entry point (79 tools, 5 resources, 4 prompts)
+├── cli.py                 # CLI entry point (server, init, init --update)
+├── init.py                # Workspace initializer
+├── server.py              # MCP server entry point (79 tools, 6 resources, 4 prompts)
 ├── config.py              # Environment configuration
 ├── connections/           # External service clients
 │   ├── docker_client.py   # Docker Compose management

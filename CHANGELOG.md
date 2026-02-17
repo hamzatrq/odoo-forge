@@ -5,6 +5,27 @@ All notable changes to OdooForge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] — 2026-02-18
+
+### Added
+
+- **`odooforge init` workspace initializer** — one-command scaffolding of a complete OdooForge workspace
+  - Creates `CLAUDE.md`, `.env`, `skills/`, `docker/`, `addons/`, MCP configs (`.cursor/`, `.windsurf/`), and `.gitignore`
+  - Skips existing files by default to preserve user customizations
+  - Appends OdooForge section to existing `.gitignore` files
+- **`odooforge init --update`** — update workspace template files to the latest package version
+  - Overwrites skills, configs, Docker files, and `CLAUDE.md` with latest versions
+  - **Never overwrites `.env`** — user credentials are always protected
+  - Replaces the `# OdooForge` section in `.gitignore` in-place
+  - Reports `"created"` | `"skipped"` | `"updated"` status for each file
+- **CLI help** — `odooforge -h` shows available commands including `init --update`
+
+### Changed
+
+- OdooForge is now a **CLI toolkit + MCP server** (not just an MCP server)
+- Updated README to reflect CLI-first identity and `odooforge init` workflow
+- Test suite expanded to **564 tests**
+
 ## [0.2.0] — 2026-02-18
 
 ### Added

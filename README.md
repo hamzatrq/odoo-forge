@@ -2,15 +2,15 @@
 
 # 🔨 OdooForge
 
-**AI-First ERP Configuration Engine — MCP Server for Odoo 18**
+**AI-First ERP Configuration Engine for Odoo 18**
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://python.org)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-5A67D8?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyTDIgN2wxMCA1IDEwLTV6TTIgMTdsMTAgNSAxMC01TTIgMTJsMTAgNSAxMC01Ii8+PC9zdmc+)](https://modelcontextprotocol.io)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL_v3%2B-blue)](LICENSE)
 [![Odoo 18](https://img.shields.io/badge/Odoo-18-714B67?logo=odoo&logoColor=white)](https://odoo.com)
 
-Give AI assistants **complete control** over Odoo 18 instances via [Model Context Protocol](https://modelcontextprotocol.io/).<br/>
-79 tools. Domain knowledge. Planning. Code generation. Zero clicking through menus.
+CLI toolkit + [MCP server](https://modelcontextprotocol.io/) that gives AI assistants **complete control** over Odoo 18.<br/>
+79 tools. Domain knowledge. Planning. Code generation. One-command workspace setup.
 
 [Getting Started](docs/getting-started.md) · [Tool Reference](docs/tools/overview.md) · [Architecture](docs/architecture.md) · [Contributing](CONTRIBUTING.md)
 
@@ -47,45 +47,53 @@ OdooForge turns natural language into Odoo operations. From spinning up Docker c
 ### 1. Install
 
 ```bash
-# Using pip
 pip install odooforge
-
-# Or run directly with uvx (no install needed)
-uvx odooforge
 ```
 
-### 2. Configure Your MCP Client
+### 2. Initialize Workspace
 
-Add to your **Claude Desktop** or **Cursor** config:
+```bash
+odooforge init
+```
 
-```json
-{
-  "mcpServers": {
-    "odooforge": {
-      "command": "uvx",
-      "args": ["odooforge"]
-    }
-  }
-}
+This scaffolds everything you need in the current directory:
+
+```
+.
+├── CLAUDE.md                  # AI assistant context
+├── .env                       # Connection settings (fill in your details)
+├── skills/                    # Claude Code skills (brainstorm, architect, debug)
+├── docker/
+│   ├── docker-compose.yml     # Odoo 18 + PostgreSQL 17
+│   └── odoo.conf
+├── addons/                    # Your custom Odoo modules
+├── .cursor/mcp.json           # Cursor MCP config
+├── .windsurf/mcp.json         # Windsurf MCP config
+└── .gitignore
 ```
 
 ### 3. Start Odoo
 
 ```bash
-# Docker Compose included — Odoo 18 + PostgreSQL 17
-docker compose -f docker/docker-compose.yml up -d
+# Edit .env with your connection details, then:
+cd docker && docker compose up -d
 ```
 
-Create a `.env` file (see [`.env.example`](.env.example)) or set environment variables:
+### 4. Start Coding
+
+Open the workspace in your AI editor. The MCP configs are already set up — your assistant has access to all 79 OdooForge tools.
+
+> Ask your AI assistant to run `odoo_diagnostics_health_check` to verify everything is connected.
+
+### Updating Your Workspace
+
+After upgrading OdooForge (`pip install --upgrade odooforge`), update workspace template files to the latest versions:
 
 ```bash
-ODOO_URL=http://localhost:8069
-ODOO_DEFAULT_DB=odoo
-ODOO_ADMIN_USER=admin
-ODOO_ADMIN_PASSWORD=admin
+odooforge init --update
 ```
 
-> **That's it.** Ask your AI assistant to run `odoo_diagnostics_health_check` to verify everything is connected.
+This overwrites skills, configs, and Docker files with the latest versions. Your `.env` is **never** overwritten.
 
 ## ⚙️ Configuration
 
@@ -179,7 +187,7 @@ If you have customized OdooForge in a local virtual environment:
 
 OdooForge includes built-in domain knowledge that helps AI assistants make informed decisions:
 
-### MCP Resources (5)
+### MCP Resources (6)
 
 Structured knowledge accessible via `odoo://` URIs:
 
@@ -190,6 +198,7 @@ Structured knowledge accessible via `odoo://` URIs:
 | `odoo://knowledge/dictionary` | Business terms → Odoo models/fields mapping |
 | `odoo://knowledge/best-practices` | Naming conventions, field design, security patterns |
 | `odoo://knowledge/patterns` | Common customization patterns (trackable models, workflows) |
+| `odoo://knowledge/blueprints/{industry}` | Detailed blueprint for a specific industry |
 
 ### MCP Prompts (4)
 
@@ -232,7 +241,7 @@ One-command setup for common business types:
 
 ```mermaid
 graph TB
-    AI[AI Assistant<br/>Claude / Cursor / etc.] -->|MCP Protocol| MCP[OdooForge MCP Server<br/>79 tools · 5 resources · 4 prompts]
+    AI[AI Assistant<br/>Claude / Cursor / etc.] -->|MCP Protocol| MCP[OdooForge MCP Server<br/>79 tools · 6 resources · 4 prompts]
 
     MCP --> Planning[Planning Layer]
     MCP --> Workflows[Workflow Layer]
@@ -298,7 +307,9 @@ graph TB
 
 ```
 src/odooforge/
-├── server.py                 # MCP server — 79 tools, 5 resources, 4 prompts
+├── cli.py                    # CLI entry point — server, init, init --update
+├── init.py                   # Workspace initializer — scaffolds configs, skills, Docker
+├── server.py                 # MCP server — 79 tools, 6 resources, 4 prompts
 ├── config.py                 # Environment configuration
 ├── connections/
 │   ├── docker_client.py      # Docker Compose management
@@ -362,7 +373,7 @@ git clone https://github.com/hamzatrq/odoo-forge.git
 cd odooforge
 uv sync --group dev
 
-# Run tests (545+ tests)
+# Run tests (564 tests)
 uv run pytest tests/ -v
 
 # Run the server locally

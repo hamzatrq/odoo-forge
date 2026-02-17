@@ -11,7 +11,8 @@ def main() -> None:
     if len(sys.argv) > 1 and sys.argv[1] == "init":
         from odooforge.init import run_init
 
-        run_init()
+        update = "--update" in sys.argv[2:]
+        run_init(update=update)
     elif len(sys.argv) > 1 and sys.argv[1] in ("-h", "--help"):
         _print_usage()
     else:
@@ -29,9 +30,10 @@ def _print_usage() -> None:
         "Usage: odooforge [command]\n"
         "\n"
         "Commands:\n"
-        "  (none)    Start the OdooForge MCP server\n"
-        "  init      Initialize current directory as an OdooForge workspace\n"
-        "  -h        Show this help message\n"
+        "  (none)          Start the OdooForge MCP server\n"
+        "  init            Initialize current directory as an OdooForge workspace\n"
+        "  init --update   Update workspace template files to latest version\n"
+        "  -h              Show this help message\n"
     )
 
 

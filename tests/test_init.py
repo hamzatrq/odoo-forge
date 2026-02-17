@@ -145,7 +145,7 @@ def test_cli_dispatches_init() -> None:
     with patch.object(sys, "argv", ["odooforge", "init"]), \
          patch("odooforge.init.run_init") as mock_run:
         main()
-        mock_run.assert_called_once()
+        mock_run.assert_called_once_with(update=False)
 
 
 def test_cli_help_flag(capsys: pytest.CaptureFixture[str]) -> None:
@@ -165,3 +165,60 @@ def test_run_init_returns_results(workspace: Path) -> None:
     results = run_init(workspace)
     assert len(results) == 11  # total files
     assert all(isinstance(r, tuple) and len(r) == 2 for r in results)
+
+
+# ── Update behavior ──────────────────────────────────────────────
+
+
+def test_update_overwrites_template_files(workspace: Path) -> None:
+    """``--update`` should overwrite all template files (not .env)."""
+    run_init(workspace)
+    results = run_init(workspace, update=True)
+    status_map = {p: s for p, s in results}
+
+    # Template files should be updated
+    assert status_map[str(workspace / "CLAUDE.md")] == "updated"
+    assert status_map[str(workspace / "skills" / "odoo-brainstorm.md")] == "updated"
+    assert status_map[str(workspace / "skills" / "odoo-architect.md")] == "updated"
+    assert status_map[str(workspace / "skills" / "odoo-debug.md")] == "updated"
+    assert status_map[str(workspace / ".cursor" / "mcp.json")] == "updated"
+    assert status_map[str(workspace / ".windsurf" / "mcp.json")] == "updated"
+    assert status_map[str(workspace / "docker" / "docker-compose.yml")] == "updated"
+    assert status_map[str(workspace / "docker" / "odoo.conf")] == "updated"
+    assert status_map[str(workspace / ".gitignore")] == "updated"
+
+
+def test_update_skips_env(workspace: Path) -> None:
+    """``.env`` must never be overwritten, even with ``--update``."""
+    run_init(workspace)
+    (workspace / ".env").write_text("ODOO_URL=http://custom:8069\n")
+    results = run_init(workspace, update=True)
+    status_map = {p: s for p, s in results}
+
+    assert status_map[str(workspace / ".env")] == "skipped"
+    assert (workspace / ".env").read_text() == "ODOO_URL=http://custom:8069\n"
+
+
+def test_update_gitignore_replaces_section(workspace: Path) -> None:
+    """``--update`` should replace the OdooForge section in .gitignore."""
+    (workspace / ".gitignore").write_text(
+        "node_modules/\n\n# OdooForge\n.env\nold_entry\n"
+    )
+    results = run_init(workspace, update=True)
+    gi_results = [(p, s) for p, s in results if ".gitignore" in p]
+    assert gi_results[0][1] == "updated"
+
+    content = (workspace / ".gitignore").read_text()
+    assert "node_modules/" in content  # user section preserved
+    assert "# OdooForge" in content  # marker still present
+    assert "old_entry" not in content  # old content replaced
+
+
+def test_cli_passes_update_flag() -> None:
+    """``odooforge init --update`` should pass ``update=True`` to run_init."""
+    from odooforge.cli import main
+
+    with patch.object(sys, "argv", ["odooforge", "init", "--update"]), \
+         patch("odooforge.init.run_init") as mock_run:
+        main()
+        mock_run.assert_called_once_with(update=True)
