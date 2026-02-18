@@ -1,17 +1,21 @@
 # Architecture
 
-OdooForge is a multi-layered MCP server that bridges AI assistants to Odoo 18 instances. Beyond basic tools, it provides domain knowledge, planning intelligence, workflow orchestration, and code generation.
+OdooForge is an AI-First ERP Configuration Engine for Odoo 18. It combines an MCP server (79 tools, 6 resources, 4 prompts) with Claude Code extensions (6 skills, 4 specialist agents) to create an ongoing AI layer for Odoo management.
 
 ## System Overview
 
 ```mermaid
 graph TB
-    AI["AI Assistant<br/>(Claude / Cursor)"] -->|"MCP Protocol<br/>stdio transport"| Server["OdooForge Server<br/>FastMCP · 79 tools · 5 resources · 4 prompts"]
+    AI["AI Assistant<br/>(Claude / Cursor)"] -->|"MCP Protocol<br/>stdio transport"| Server["OdooForge MCP Server<br/>FastMCP · 79 tools · 6 resources · 4 prompts"]
+    AI -->|"Skills & Agents"| CC["Claude Code Extensions<br/>6 skills · 4 agents"]
 
     Server --> L3["Layer 3: Planning"]
     Server --> L2["Layer 2: Workflows"]
     Server --> L1["Layer 1: Knowledge"]
-    Server --> L0["Layer 0: Core Tools<br/>17 modules, 71 tools"]
+    Server --> L0["Layer 0: Core Tools<br/>20 modules, 71 tools"]
+
+    CC --> Skills["Skills<br/>brainstorm · architect · setup<br/>data · report · debug"]
+    CC --> Agents["Agents<br/>explorer · executor<br/>reviewer · analyst"]
 
     L3 --> L1
     L2 --> L1
@@ -36,7 +40,7 @@ graph TB
 
 ### MCP Server (`server.py`)
 
-The entry point. Uses [FastMCP](https://github.com/jlowin/fastmcp) to register all 79 tools, 5 resources, and 4 prompts. On startup, it:
+The entry point. Uses [FastMCP](https://github.com/jlowin/fastmcp) to register all 79 tools, 6 resources, and 4 prompts. On startup, it:
 
 1. Loads configuration from environment
 2. Initializes connection clients (Docker, XML-RPC, PostgreSQL)
@@ -83,6 +87,7 @@ Provides structured domain knowledge via MCP resources (`odoo://` URIs):
 |-------------|---------|
 | `odoo://knowledge/modules` | 35 Odoo 18 modules with business-language descriptions, use cases, and dependencies |
 | `odoo://knowledge/blueprints` | 9 industry blueprints with module lists, settings, and custom field recommendations |
+| `odoo://knowledge/blueprints/{industry}` | Detailed blueprint for a specific industry |
 | `odoo://knowledge/dictionary` | Business term → Odoo model/field mapping for natural language understanding |
 | `odoo://knowledge/best-practices` | Naming conventions (`x_` prefix), field design rules, security patterns |
 | `odoo://knowledge/patterns` | Common patterns: trackable models, partner extensions, approval workflows |
@@ -225,3 +230,53 @@ class AppState:
 ```
 
 The state is initialized in `app_lifespan()` and injected into tool functions via MCP context.
+
+## Claude Code Extensions
+
+Beyond the MCP server, OdooForge provides Claude Code-specific extensions that are scaffolded by `odooforge init` into `.claude/`.
+
+### Skills (`.claude/skills/`)
+
+Skills are markdown files with YAML frontmatter that guide Claude through structured workflows. They run in the main conversation context and are invoked as slash commands.
+
+| Skill | Lifecycle Phase | Description |
+|-------|----------------|-------------|
+| `/odoo-brainstorm` | Discover | Explore customization ideas, discover modules, match blueprints |
+| `/odoo-architect` | Plan | Design data models with naming conventions, inheritance, security |
+| `/odoo-setup` | Build | Full business deployment from natural language requirements |
+| `/odoo-data` | Populate | Import, create, and manage business data |
+| `/odoo-report` | Analyze | Build dashboards, define KPIs, analyze business data |
+| `/odoo-debug` | Fix | Diagnose issues with error mapping, log analysis, snapshot rollback |
+
+Skills are process guides — they tell Claude *when* and *why* to use MCP tools, not just *how*.
+
+### Agents (`.claude/agents/`)
+
+Agents are specialists that Claude dispatches for focused tasks. They run in isolated contexts with their own tool permissions and system prompts.
+
+| Agent | Model | Access | Description |
+|-------|-------|--------|-------------|
+| `odoo-explorer` | haiku | Read-only | Gathers instance state before planning — modules, schema, customizations, data counts |
+| `odoo-executor` | sonnet | Write (MCP only) | Executes plans step-by-step with automatic snapshots before each mutation |
+| `odoo-reviewer` | haiku | Read-only | Post-execution validation — health checks, regression detection |
+| `odoo-analyst` | sonnet | Read + Dashboard | Queries business data via SQL, generates insights, creates dashboards |
+
+**Design principles:**
+- **Least privilege** — read-only agents cannot write; the executor cannot use Bash/Write/Edit
+- **Snapshot safety** — the executor always creates a snapshot before mutating operations
+- **Isolation** — each agent runs in its own context, preventing context pollution
+- **Constrained turns** — `maxTurns` limits prevent runaway execution
+
+### Workspace Scaffolding (`init.py`)
+
+The `odooforge init` command copies bundled templates from `src/odooforge/data/` to the workspace:
+
+| Source | Destination | Count |
+|--------|-------------|-------|
+| `data/skills/<name>/SKILL.md` | `.claude/skills/<name>/SKILL.md` | 6 |
+| `data/agents/<name>.md` | `.claude/agents/<name>.md` | 4 |
+| `data/.env.example` | `.env` | 1 |
+| `data/docker-compose.yml` | `docker/docker-compose.yml` | 1 |
+| Templates (inline) | `CLAUDE.md`, `.cursor/mcp.json`, `.windsurf/mcp.json`, etc. | 7 |
+
+Total: 18 files scaffolded. The `--update` flag overwrites all template files except `.env` (which contains user credentials).

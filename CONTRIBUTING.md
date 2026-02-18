@@ -72,9 +72,13 @@ uv run pytest tests/test_xmlrpc.py tests/test_docker.py -v
 ```
 src/odooforge/
 ├── cli.py                 # CLI entry point (server, init, init --update)
-├── init.py                # Workspace initializer
+├── init.py                # Workspace initializer (skills, agents, configs)
 ├── server.py              # MCP server entry point (79 tools, 6 resources, 4 prompts)
 ├── config.py              # Environment configuration
+├── data/                  # Bundled templates for odooforge init
+│   ├── skills/            # 6 skill definitions (SKILL.md files)
+│   ├── agents/            # 4 agent definitions (.md files)
+│   └── ...                # .env.example, docker, mcp configs
 ├── connections/           # External service clients
 │   ├── docker_client.py   # Docker Compose management
 │   ├── xmlrpc_client.py   # Odoo XML-RPC interface
@@ -114,6 +118,12 @@ src/odooforge/
 └── verification/          # Post-operation verification
     ├── state_cache.py     # Live model/field cache
     └── verify_*.py        # Per-category verifiers
+
+.claude/                   # Claude Code extensions (also scaffolded by init)
+├── skills/                # 6 skills (/odoo-brainstorm, /odoo-architect, etc.)
+│   └── <name>/SKILL.md
+└── agents/                # 4 agents (odoo-explorer, odoo-executor, etc.)
+    └── <name>.md
 ```
 
 ## Making Changes

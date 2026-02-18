@@ -33,18 +33,27 @@ This scaffolds everything you need:
 
 ```
 .
-├── CLAUDE.md                  # AI assistant context
-├── .env                       # Connection settings (edit this!)
-├── .claude/skills/            # Claude Code skills
-│   ├── odoo-brainstorm/SKILL.md
-│   ├── odoo-architect/SKILL.md
-│   └── odoo-debug/SKILL.md
+├── CLAUDE.md                     # AI assistant context
+├── .env                          # Connection settings (edit this!)
+├── .claude/
+│   ├── skills/                   # 6 Claude Code skills
+│   │   ├── odoo-brainstorm/SKILL.md    # /odoo-brainstorm
+│   │   ├── odoo-architect/SKILL.md     # /odoo-architect
+│   │   ├── odoo-debug/SKILL.md         # /odoo-debug
+│   │   ├── odoo-setup/SKILL.md         # /odoo-setup
+│   │   ├── odoo-data/SKILL.md          # /odoo-data
+│   │   └── odoo-report/SKILL.md        # /odoo-report
+│   └── agents/                   # 4 specialist subagents
+│       ├── odoo-explorer.md      # Read-only instance scout
+│       ├── odoo-executor.md      # Plan execution engine
+│       ├── odoo-reviewer.md      # Post-execution validator
+│       └── odoo-analyst.md       # Business data analyst
 ├── docker/
-│   ├── docker-compose.yml     # Odoo 18 + PostgreSQL 17
+│   ├── docker-compose.yml        # Odoo 18 + PostgreSQL 17
 │   └── odoo.conf
-├── addons/                    # Your custom Odoo modules
-├── .cursor/mcp.json           # Cursor MCP config (auto-configured)
-├── .windsurf/mcp.json         # Windsurf MCP config (auto-configured)
+├── addons/                       # Your custom Odoo modules
+├── .cursor/mcp.json              # Cursor MCP config (auto-configured)
+├── .windsurf/mcp.json            # Windsurf MCP config (auto-configured)
 └── .gitignore
 ```
 
@@ -56,7 +65,7 @@ After upgrading OdooForge (`pip install --upgrade odooforge`), update your works
 odooforge init --update
 ```
 
-This overwrites skills, configs, and Docker files with the latest versions. Your `.env` is **never** overwritten.
+This overwrites skills, agents, configs, and Docker files with the latest versions. Your `.env` is **never** overwritten.
 
 ## Start Odoo
 
@@ -106,7 +115,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ### Claude Code
 
-No extra config needed — `odooforge init` creates the workspace `CLAUDE.md` and skills automatically. Add the MCP server to your Claude Code config:
+No extra config needed — `odooforge init` creates the workspace `CLAUDE.md`, skills, and agents automatically. Add the MCP server to your Claude Code config:
 
 ```bash
 claude mcp add odooforge -- uvx odooforge
@@ -135,11 +144,13 @@ Run a health check on my Odoo instance
 
 This calls `odoo_diagnostics_health_check` and verifies Docker, database, authentication, and module status.
 
-### 2. Create a database
+### 2. Set up a business
 
 ```
-Create a new database called "myshop" with demo data
+I run a small bakery with 2 locations. Set up my Odoo for me.
 ```
+
+In Claude Code, this activates the `/odoo-setup` skill, which guides the full Discover → Plan → Build flow.
 
 ### 3. Install modules
 
@@ -147,23 +158,64 @@ Create a new database called "myshop" with demo data
 Install the Sales, CRM, and Inventory modules
 ```
 
-### 4. Create records
+### 4. Import data
 
 ```
-Create a contact named "Acme Corp" with email "info@acme.com"
+I have a CSV of products to import — help me get them into Odoo
 ```
 
-### 5. Try a recipe
+The `/odoo-data` skill guides the import workflow with previews and validation.
+
+### 5. Analyze your business
 
 ```
-Show me the available recipes, then run the ecommerce recipe in dry-run mode
+How are my sales doing this month? Show me a breakdown by product.
 ```
+
+The `/odoo-report` skill dispatches the `odoo-analyst` agent for SQL-powered insights.
+
+### 6. Fix issues
+
+```
+I'm getting an error when creating invoices — can you help debug it?
+```
+
+The `/odoo-debug` skill runs diagnostics, reads logs, and suggests fixes.
+
+## Skills & Agents
+
+### Skills (Claude Code)
+
+Skills are slash commands that guide Claude through structured workflows:
+
+| Skill | When to Use |
+|-------|-------------|
+| `/odoo-brainstorm` | Exploring what Odoo can do for your business |
+| `/odoo-architect` | Designing custom data models |
+| `/odoo-setup` | Deploying Odoo for a business from scratch |
+| `/odoo-data` | Importing data, creating records, migrating |
+| `/odoo-report` | Building dashboards, analyzing data |
+| `/odoo-debug` | Diagnosing and fixing issues |
+
+### Agents (Claude Code)
+
+Agents are specialists that Claude dispatches for focused work:
+
+| Agent | What It Does |
+|-------|-------------|
+| `odoo-explorer` | Scouts your instance (read-only) — installed modules, schema, customizations |
+| `odoo-executor` | Executes plans step-by-step with automatic snapshots |
+| `odoo-reviewer` | Validates results after execution, checks for regressions |
+| `odoo-analyst` | Runs SQL queries and generates business insights |
+
+Agents have constrained tool access — read-only agents can't modify your instance.
 
 ## Safety Tips
 
 - **Always create snapshots** before making major changes (module installs, schema changes)
 - **Use dry-run mode** for recipes and imports before executing
 - **Destructive operations** (delete, drop, uninstall) require `confirm=true` — the AI will ask for confirmation
+- **The executor agent** creates snapshots automatically before each mutation
 
 ## Next Steps
 
