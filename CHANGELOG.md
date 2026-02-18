@@ -5,6 +5,28 @@ All notable changes to OdooForge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-02-18
+
+### Added
+
+- **Subagent definitions** (4 specialist agents for Claude Code)
+  - `odoo-explorer` — read-only instance scout, gathers state before planning
+  - `odoo-executor` — plan execution engine with snapshot safety
+  - `odoo-reviewer` — post-execution validator, checks for regressions
+  - `odoo-analyst` — business data analyst, queries and insights
+- **New skills** (3 additional Claude Code skills, total 6)
+  - `/odoo-setup` — full business deployment from natural language
+  - `/odoo-data` — import, create, and manage business data
+  - `/odoo-report` — build dashboards and analyze business data
+- `odooforge init` now scaffolds agents (`.claude/agents/`) alongside skills
+- Plugin architecture design document
+
+### Changed
+
+- Total skills increased from 3 to **6**
+- Total scaffolded files increased from 11 to **18**
+- Test suite expanded to **567 tests**
+
 ## [0.2.2] — 2026-02-18
 
 ### Fixed
