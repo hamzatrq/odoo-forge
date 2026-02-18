@@ -31,6 +31,13 @@ def test_creates_all_expected_files(workspace: Path) -> None:
         str(workspace / ".claude" / "skills" / "odoo-brainstorm" / "SKILL.md"),
         str(workspace / ".claude" / "skills" / "odoo-architect" / "SKILL.md"),
         str(workspace / ".claude" / "skills" / "odoo-debug" / "SKILL.md"),
+        str(workspace / ".claude" / "skills" / "odoo-setup" / "SKILL.md"),
+        str(workspace / ".claude" / "skills" / "odoo-data" / "SKILL.md"),
+        str(workspace / ".claude" / "skills" / "odoo-report" / "SKILL.md"),
+        str(workspace / ".claude" / "agents" / "odoo-explorer.md"),
+        str(workspace / ".claude" / "agents" / "odoo-executor.md"),
+        str(workspace / ".claude" / "agents" / "odoo-reviewer.md"),
+        str(workspace / ".claude" / "agents" / "odoo-analyst.md"),
         str(workspace / "CLAUDE.md"),
         str(workspace / ".cursor" / "mcp.json"),
         str(workspace / ".windsurf" / "mcp.json"),
@@ -49,7 +56,8 @@ def test_creates_all_expected_files(workspace: Path) -> None:
 
 def test_skill_files_have_content(workspace: Path) -> None:
     run_init(workspace)
-    for name in ("odoo-brainstorm", "odoo-architect", "odoo-debug"):
+    for name in ("odoo-brainstorm", "odoo-architect", "odoo-debug",
+                 "odoo-setup", "odoo-data", "odoo-report"):
         content = (workspace / ".claude" / "skills" / name / "SKILL.md").read_text()
         assert len(content) > 100, f"{name} seems too short"
         assert "---" in content  # frontmatter present
@@ -163,7 +171,7 @@ def test_cli_help_flag(capsys: pytest.CaptureFixture[str]) -> None:
 
 def test_run_init_returns_results(workspace: Path) -> None:
     results = run_init(workspace)
-    assert len(results) == 11  # total files
+    assert len(results) == 18  # total files (6 skills + 4 agents + 8 other)
     assert all(isinstance(r, tuple) and len(r) == 2 for r in results)
 
 
@@ -181,6 +189,13 @@ def test_update_overwrites_template_files(workspace: Path) -> None:
     assert status_map[str(workspace / ".claude" / "skills" / "odoo-brainstorm" / "SKILL.md")] == "updated"
     assert status_map[str(workspace / ".claude" / "skills" / "odoo-architect" / "SKILL.md")] == "updated"
     assert status_map[str(workspace / ".claude" / "skills" / "odoo-debug" / "SKILL.md")] == "updated"
+    assert status_map[str(workspace / ".claude" / "skills" / "odoo-setup" / "SKILL.md")] == "updated"
+    assert status_map[str(workspace / ".claude" / "skills" / "odoo-data" / "SKILL.md")] == "updated"
+    assert status_map[str(workspace / ".claude" / "skills" / "odoo-report" / "SKILL.md")] == "updated"
+    assert status_map[str(workspace / ".claude" / "agents" / "odoo-explorer.md")] == "updated"
+    assert status_map[str(workspace / ".claude" / "agents" / "odoo-executor.md")] == "updated"
+    assert status_map[str(workspace / ".claude" / "agents" / "odoo-reviewer.md")] == "updated"
+    assert status_map[str(workspace / ".claude" / "agents" / "odoo-analyst.md")] == "updated"
     assert status_map[str(workspace / ".cursor" / "mcp.json")] == "updated"
     assert status_map[str(workspace / ".windsurf" / "mcp.json")] == "updated"
     assert status_map[str(workspace / "docker" / "docker-compose.yml")] == "updated"
@@ -222,3 +237,35 @@ def test_cli_passes_update_flag() -> None:
          patch("odooforge.init.run_init") as mock_run:
         main()
         mock_run.assert_called_once_with(update=True)
+
+
+# ── Agent scaffolding ─────────────────────────────────────────────
+
+AGENT_NAMES = ("odoo-explorer", "odoo-executor", "odoo-reviewer", "odoo-analyst")
+
+
+def test_creates_agent_files(workspace: Path) -> None:
+    results = run_init(workspace)
+    created = {p for p, s in results if s == "created"}
+    for name in AGENT_NAMES:
+        expected = str(workspace / ".claude" / "agents" / f"{name}.md")
+        assert expected in created, f"Agent {name} not created"
+        assert Path(expected).exists()
+
+
+def test_agent_files_have_frontmatter(workspace: Path) -> None:
+    run_init(workspace)
+    for name in AGENT_NAMES:
+        content = (workspace / ".claude" / "agents" / f"{name}.md").read_text()
+        assert content.startswith("---"), f"{name} missing frontmatter"
+        assert f"name: {name}" in content
+
+
+def test_update_overwrites_agent_files(workspace: Path) -> None:
+    run_init(workspace)
+    agent = workspace / ".claude" / "agents" / "odoo-explorer.md"
+    agent.write_text("custom content")
+    results = run_init(workspace, update=True)
+    status_map = {p: s for p, s in results}
+    assert status_map[str(agent)] == "updated"
+    assert "custom content" not in agent.read_text()

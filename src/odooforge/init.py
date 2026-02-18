@@ -68,6 +68,17 @@ The `.claude/skills/` directory contains Claude Code skills for guided workflows
 - **/odoo-brainstorm** — Explore Odoo customization ideas
 - **/odoo-architect** — Design data models with best practices
 - **/odoo-debug** — Diagnose and fix Odoo issues
+- **/odoo-setup** — Full business deployment from natural language
+- **/odoo-data** — Import, create, and manage business data
+- **/odoo-report** — Build dashboards and analyze business data
+
+## Agents
+
+The `.claude/agents/` directory contains specialist subagents:
+- **odoo-explorer** — Read-only instance scout (gathers state before planning)
+- **odoo-executor** — Plan execution engine (with snapshot safety)
+- **odoo-reviewer** — Post-execution validator (checks for regressions)
+- **odoo-analyst** — Business data analyst (queries and insights)
 
 ## Custom Addons
 
@@ -149,10 +160,22 @@ def _copy_file(src: Path, dst: Path, results: list[Result], *, update: bool = Fa
 
 def _copy_skills(target: Path, results: list[Result], *, update: bool = False) -> None:
     skills_src = _pkg_data() / "skills"
-    for name in ("odoo-brainstorm", "odoo-architect", "odoo-debug"):
+    for name in ("odoo-brainstorm", "odoo-architect", "odoo-debug",
+                 "odoo-setup", "odoo-data", "odoo-report"):
         _copy_file(
             skills_src / name / "SKILL.md",
             target / ".claude" / "skills" / name / "SKILL.md",
+            results,
+            update=update,
+        )
+
+
+def _copy_agents(target: Path, results: list[Result], *, update: bool = False) -> None:
+    agents_src = _pkg_data() / "agents"
+    for name in ("odoo-explorer", "odoo-executor", "odoo-reviewer", "odoo-analyst"):
+        _copy_file(
+            agents_src / f"{name}.md",
+            target / ".claude" / "agents" / f"{name}.md",
             results,
             update=update,
         )
@@ -257,6 +280,7 @@ def run_init(target: Path | None = None, *, update: bool = False) -> list[Result
     results: list[Result] = []
 
     _copy_skills(target, results, update=update)
+    _copy_agents(target, results, update=update)
     _create_claude_md(target, results, update=update)
     _create_mcp_configs(target, results, update=update)
     _copy_env(target, results)  # always update=False
